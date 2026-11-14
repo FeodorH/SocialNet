@@ -99,8 +99,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // ============ ДЕЙСТВИЯ ============
-
     /**
      * Pull-to-refresh — только посты (как ты и хотел).
      * Профиль обновится после updateProfile-операций или при следующем входе.
