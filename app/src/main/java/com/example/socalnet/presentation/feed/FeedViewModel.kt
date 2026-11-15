@@ -10,8 +10,10 @@ import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.model.ReactionType
 import com.example.socalnet.domain.usecase.ObserveCurrentUserUseCase
 import com.example.socalnet.domain.usecase.ObserveFeedUseCase
+import com.example.socalnet.domain.usecase.ObserveSubscriptionIdsUseCase
 import com.example.socalnet.domain.usecase.SyncFeedUseCase
 import com.example.socalnet.domain.usecase.ToggleReactionUseCase
+import com.example.socalnet.domain.usecase.ToggleSubscriptionUseCase
 import com.example.socalnet.presentation.common.UiEvent
 import com.example.socalnet.presentation.feed.model.FeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,11 +23,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,6 +43,8 @@ class FeedViewModel @Inject constructor(
     private val syncFeedUseCase: SyncFeedUseCase,
     private val toggleReaction: ToggleReactionUseCase,
     private val observeCurrentUser: ObserveCurrentUserUseCase,
+    private val observeSubscriptionIds: ObserveSubscriptionIdsUseCase,
+    private val toggleSubscription: ToggleSubscriptionUseCase,
 ) : ViewModel() {
 
     /** управляющие флаги */
@@ -49,11 +55,16 @@ class FeedViewModel @Inject constructor(
     private val _initialAttemptCompleted = MutableStateFlow(false)
     private val _initialError = MutableStateFlow<String?>(null)
 
+    private val currentUserIdFlow = observeCurrentUser().map { it?.id }
+    private val subscriptionIdsFlow = observeSubscriptionIds()
+    val selectedTab: StateFlow<FeedType> = _selectedTab.asStateFlow()
+
     private var cursor: PageCursor? = null
 
     /** События (Snackbar и т.п.) */
     private val _events = Channel<UiEvent>(Channel.BUFFERED)
     val events: Flow<UiEvent> = _events.receiveAsFlow()
+
 
     private val feedFlow: Flow<List<Post>> =
         _selectedTab.flatMapLatest {
@@ -64,27 +75,19 @@ class FeedViewModel @Inject constructor(
         }
 
     val state: StateFlow<UiState<FeedUiState>> = combine(
-        combine(feedFlow, _selectedTab) { posts, tab -> posts to tab },
+        feedFlow,
         combine(_isRefreshing, _isLoadingMore) { r, l -> r to l },
         combine(_hasMore, _initialAttemptCompleted) { h, a -> h to a },
-        _initialError,
-    ) { (posts, tab), (refreshing, loadingMore), (hasMore, completed), error ->
-
+        combine(_initialError, currentUserIdFlow, subscriptionIdsFlow) { e, u, s -> Triple(e, u, s) },
+    ) { posts, (refreshing, loadingMore), (hasMore, completed), (error, currentUserId, subscribedIds) ->
         val feedState = FeedUiState(
-            selectedTab = tab,
             posts = posts,
             isRefreshing = refreshing,
             isLoadingMore = loadingMore,
             hasMore = hasMore,
+            currentUserId = currentUserId,
+            subscribedAuthorIds = subscribedIds,
         )
-
-        /**
-         * Логика выбора UiState:
-         * 1. Есть посты → Content (даже если есть ошибка/идёт refresh)
-         * 2. Первая попытка не завершилась → Loading
-         * 3. Попытка завершилась с ошибкой и без постов → Error
-         * 4. Попытка завершилась успешно, но постов нет → Empty
-         */
         when {
             posts.isNotEmpty() -> UiState.Content(feedState)
             !completed -> UiState.Loading
@@ -152,6 +155,13 @@ class FeedViewModel @Inject constructor(
             is AppResult.Failure -> {
                 _events.send(UiEvent.ShowMessage("Не удалось изменить реакцию"))
             }
+        }
+    }
+
+    fun onSubscribeClick(authorId: String, isSubscribed: Boolean) = viewModelScope.launch {
+        when (val r = toggleSubscription(authorId, isSubscribed)) {
+            is AppResult.Success -> Unit
+            is AppResult.Failure -> _events.send(UiEvent.ShowMessage("Не удалось изменить подписку"))
         }
     }
 

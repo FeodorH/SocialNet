@@ -46,10 +46,10 @@ fun SavePostScreen(
     val isEdit = content?.existingPostId != null
 
     // Photo Picker — без разрешений, работает на API 33+, fallback на API 21+
+    val available = ValidationRules.MAX_POST_IMAGES - (content?.totalImagesCount ?: 0)
     val pickImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(
-            maxItems = (ValidationRules.MAX_POST_IMAGES - (content?.totalImagesCount ?: 0))
-                .coerceAtLeast(1)
+            maxItems = maxOf(2, available)
         )
     ) { uris: List<Uri> ->
         if (uris.isNotEmpty()) onImagesSelected(uris.map { it.toString() })
@@ -281,95 +281,5 @@ private fun FullScreenMessage(
             Spacer(Modifier.height(12.dp))
             Button(onClick = onAction) { Text(actionText) }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostCreateEmptyPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Content(SavePostUiState()),
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostCreateWithTextPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Content(
-                SavePostUiState(text = "Сегодня отличный день для нового поста ☀️")
-            ),
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostEditPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Content(
-                SavePostUiState(
-                    text = "Мой существующий пост",
-                    existingImages = listOf(
-                        ImageRef.Remote("https://example.com/img1.jpg", "pid1"),
-                    ),
-                    existingPostId = "post_123",
-                )
-            ),
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostPublishingPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Content(
-                SavePostUiState(text = "Публикую...", isPublishing = true)
-            ),
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostLoadingPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Loading,
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun SavePostErrorPreview() {
-    MaterialTheme {
-        SavePostScreen(
-            state = UiState.Error("Пост не найден или удалён"),
-            onTextChange = {}, onImagesSelected = {},
-            onNewImageRemoved = {}, onExistingImageRemoved = {},
-            onSave = {}, onBack = {}, onRetryLoad = {},
-        )
     }
 }

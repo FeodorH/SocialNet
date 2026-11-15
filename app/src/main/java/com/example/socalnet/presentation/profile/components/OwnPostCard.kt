@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.model.ReactionType
-import com.example.socalnet.presentation.feed.components.PostCard
+import com.example.socalnet.presentation.common.components.PostCard
 
 @Composable
 fun OwnPostCard(
@@ -26,6 +26,7 @@ fun OwnPostCard(
         PostCard(
             post = post,
             enabled = true,
+            isOwnPost = true,
             onReactionClick = onReactionClick,
         )
 

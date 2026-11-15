@@ -75,4 +75,7 @@ class OfflineFirstSubscriptionRepositoryImpl @Inject constructor(
                 is AppResult.Failure -> result
             }
         }
+
+    override fun observeSubscriptionIds(userId: String): Flow<List<String>> =
+        subscriptionDao.observeSubscriptionIds(userId)
 }

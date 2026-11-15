@@ -16,22 +16,22 @@ import androidx.compose.ui.unit.dp
 import com.example.socalnet.core.common.UiState
 import com.example.socalnet.core.model.FeedType
 import com.example.socalnet.core.model.ReactionType
-import com.example.socalnet.presentation.feed.components.PostCard
+import com.example.socalnet.presentation.common.components.PostCard
 import com.example.socalnet.presentation.feed.model.FeedUiState
 
 @Composable
 fun FeedScreen(
     state: UiState<FeedUiState>,
+    selectedTab: FeedType,
     role: Boolean,
     onTabSelected: (FeedType) -> Unit,
     onReactionClick: (postId: String, type: ReactionType) -> Unit,
+    onSubscribeClick: (authorId: String, isSubscribed: Boolean) -> Unit,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
-
-        val selectedTab = (state as? UiState.Content)?.data?.selectedTab ?: FeedType.GENERAL
 
         TabRow(selectedTabIndex = selectedTab.ordinal) {
             Tab(
@@ -43,7 +43,15 @@ fun FeedScreen(
                 selected = selectedTab == FeedType.SUBSCRIPTIONS,
                 onClick = { onTabSelected(FeedType.SUBSCRIPTIONS) },
                 enabled = role,
-                text = { Text("Подписки") },
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                    alpha = if (role) 1f else 0.38f,
+                ),
+                text = {
+                    Text(
+                        text = "Подписки",
+                    )
+                },
             )
         }
 
@@ -62,6 +70,7 @@ fun FeedScreen(
                 state = state.data,
                 isUser = role,
                 onReactionClick = onReactionClick,
+                onSubscribeClick = onSubscribeClick,
                 onRefresh = onRefresh,
                 onLoadMore = onLoadMore,
             )
@@ -75,6 +84,7 @@ private fun ContentState(
     state: FeedUiState,
     isUser: Boolean,
     onReactionClick: (postId: String, type: ReactionType) -> Unit,
+    onSubscribeClick: (authorId: String, isSubscribed: Boolean) -> Unit,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
 ) {
@@ -106,10 +116,15 @@ private fun ContentState(
             state = listState,
         ) {
             items(state.posts, key = { it.id }) { post ->
+                val isOwnPost = post.author.id == state.currentUserId
+                val isSubscribed = post.author.id in state.subscribedAuthorIds
                 PostCard(
                     post = post,
                     enabled = isUser,
+                    isSubscribed = isSubscribed,
+                    isOwnPost = isOwnPost,
                     onReactionClick = { type -> onReactionClick(post.id, type) },
+                    onSubscribeClick = { onSubscribeClick(post.author.id, isSubscribed) },
                 )
             }
             if (state.isLoadingMore) {

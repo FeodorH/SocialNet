@@ -19,4 +19,7 @@ interface OfflineFirstSubscriptionRepository {
 
     /** Синхронизация всех подписок пользователя из сети в Room */
     suspend fun syncSubscriptions(userId: String): AppResult<Unit>
+
+    /** Реактивный список авторов, на которых подписан пользователь. */
+    fun observeSubscriptionIds(userId: String): Flow<List<String>>
 }

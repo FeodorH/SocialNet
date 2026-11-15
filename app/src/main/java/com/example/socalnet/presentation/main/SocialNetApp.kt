@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.socalnet.presentation.auth.verification.EmailVerificationRoute
 import com.example.socalnet.presentation.main.model.AuthState
 import com.example.socalnet.presentation.main.navigation.MainNavHost
 
@@ -23,7 +24,8 @@ fun SocialNetApp(
         when (val state = authState) {
             AuthState.Loading -> SplashScreen()
             AuthState.Guest -> MainNavHost(role = false)
-            is AuthState.User -> MainNavHost(role = true)
+            is AuthState.UnverifiedUser -> EmailVerificationRoute(email = state.user.email)
+            is AuthState.VerifiedUser -> MainNavHost(role = true)
         }
     }
 }

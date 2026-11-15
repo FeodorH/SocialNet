@@ -29,6 +29,18 @@ interface OfflineFirstAuthRepository {
     /** Регистрация: Firebase Auth → сохранение профиля в Room. */
     suspend fun register(email: String, password: String, name: String): AppResult<User>
 
+    /** Реактивный поток: подтверждена ли почта текущего пользователя. */
+    fun observeEmailVerified(): Flow<Boolean>
+
+    /**
+     * Перечитывает пользователя из Firebase Auth (reload + getIdToken).
+     * Возвращает true, если почта теперь подтверждена.
+     */
+    suspend fun reloadCurrentUser(): AppResult<Boolean>
+
+    /** Повторно отправляет письмо подтверждения. */
+    suspend fun sendEmailVerification(): AppResult<Unit>
+
     /** Логин: Firebase Auth → сохранение профиля в Room. */
     suspend fun login(email: String, password: String): AppResult<User>
 

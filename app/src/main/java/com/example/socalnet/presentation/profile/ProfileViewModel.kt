@@ -6,6 +6,7 @@ import com.example.socalnet.core.common.AppResult
 import com.example.socalnet.core.common.UiState
 import com.example.socalnet.core.model.ImageRef
 import com.example.socalnet.core.model.Post
+import com.example.socalnet.core.model.ReactionType
 import com.example.socalnet.domain.repository.remote.MediaRepository
 import com.example.socalnet.domain.usecase.DeletePostUseCase
 import com.example.socalnet.domain.usecase.LogoutUseCase
@@ -13,7 +14,9 @@ import com.example.socalnet.domain.usecase.ObserveCurrentUserUseCase
 import com.example.socalnet.domain.usecase.ObserveUserPostsUseCase
 import com.example.socalnet.domain.usecase.SyncCurrentUserUseCase
 import com.example.socalnet.domain.usecase.SyncUserPostsUseCase
+import com.example.socalnet.domain.usecase.ToggleReactionUseCase
 import com.example.socalnet.domain.usecase.UpdateProfileUseCase
+import com.example.socalnet.presentation.profile.model.ProfileEvent
 import com.example.socalnet.presentation.profile.model.ProfileUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,6 +42,7 @@ class ProfileViewModel @Inject constructor(
     private val syncCurrentUser: SyncCurrentUserUseCase,
     private val syncUserPosts: SyncUserPostsUseCase,
     private val updateProfile: UpdateProfileUseCase,
+    private val toggleReactionUseCase: ToggleReactionUseCase,
     private val deletePostUc: DeletePostUseCase,
     private val logoutUc: LogoutUseCase,
     private val mediaRepository: MediaRepository,
@@ -174,10 +178,20 @@ class ProfileViewModel @Inject constructor(
             is AppResult.Failure -> _events.send(ProfileEvent.ShowError(r.error))
         }
     }
-}
 
-sealed interface ProfileEvent {
-    data class ShowMessage(val text: String) : ProfileEvent
-    data class ShowError(val error: com.example.socalnet.core.common.AppError) : ProfileEvent
-    data object LoggedOut : ProfileEvent
+    fun onReactionClick(postId: String, type: ReactionType) = viewModelScope.launch {
+        val current = state.value
+        if (current !is UiState.Content) return@launch
+
+        val post = current.data.posts.find { it.id == postId } ?: return@launch
+
+        when (val r = toggleReactionUseCase(postId, type, post.myReaction)) {
+            is AppResult.Success -> Unit
+            // Room обновится → postsFlow эмитит → state пересчитается → UI перерисуется
+
+            is AppResult.Failure -> _events.send(
+                ProfileEvent.ShowError(r.error)
+            )
+        }
+    }
 }

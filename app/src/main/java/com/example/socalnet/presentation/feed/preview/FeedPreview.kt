@@ -76,7 +76,6 @@ private val fakePosts = listOf(
 
 private val feedContentState = UiState.Content(
     FeedUiState(
-        selectedTab = FeedType.GENERAL,
         posts = fakePosts,
         hasMore = true,
     )
@@ -88,8 +87,10 @@ private fun FeedUserPreview() {
     MaterialTheme {
         FeedScreen(
             state = feedContentState,
+            selectedTab = FeedType.GENERAL,
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
+            onSubscribeClick = {_, _ -> },
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -101,8 +102,10 @@ private fun FeedGuestPreview() {
     MaterialTheme {
         FeedScreen(
             state = feedContentState,
+            selectedTab = FeedType.GENERAL,
             role = false,
             onTabSelected = {}, onReactionClick = { _, _ -> },
+            onSubscribeClick = {_, _ -> },
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -114,8 +117,10 @@ private fun FeedEmptyPreview() {
     MaterialTheme {
         FeedScreen(
             state = UiState.Empty,
+            selectedTab = FeedType.GENERAL,
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
+            onSubscribeClick = {_, _ -> },
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -127,8 +132,10 @@ private fun FeedErrorPreview() {
     MaterialTheme {
         FeedScreen(
             state = UiState.Error("Не удалось загрузить ленту"),
+            selectedTab = FeedType.GENERAL,
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
+            onSubscribeClick = {_, _ -> },
             onRefresh = {}, onLoadMore = {},
         )
     }

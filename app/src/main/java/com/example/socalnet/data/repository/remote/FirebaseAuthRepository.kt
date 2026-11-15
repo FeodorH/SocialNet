@@ -9,7 +9,9 @@ import com.example.socalnet.data.dto.UserResponse
 import com.example.socalnet.data.mapper.toDomain
 import com.example.socalnet.domain.repository.remote.AuthRepository
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
@@ -45,21 +47,34 @@ class FirebaseAuthRepository @Inject constructor(
         withContext(dispatchers.io) {
             try {
                 val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-                val uid =
-                    authResult.user?.uid ?: return@withContext AppResult.Failure(AppError.Unknown())
+                val firebaseUser = authResult.user
+                    ?: return@withContext AppResult.Failure(AppError.Unknown())
 
-                val request = CreateUserRequest(email = email, name = name)
-                val userData = mapOf(
-                    "email" to request.email,
-                    "name" to request.name,
-                    "createdAt" to FieldValue.serverTimestamp()
-                )
+                runCatching { firebaseUser.sendEmailVerification().await() }
+
+                val uid = firebaseUser.uid
                 val userRef = firestore.collection("users").document(uid)
-                userRef.set(userData).await()
 
-                val snapshot = userRef.get().await()
-                val userResponse = snapshot.toObject(UserResponse::class.java)
-                    ?: return@withContext AppResult.Failure(AppError.NotFound)
+                runCatching {
+                    userRef.set(
+                        mapOf(
+                            "email" to email,
+                            "name" to name,
+                            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                        )
+                    ).await()
+                }
+
+                // Возвращаем User даже если Firestore-запись упала
+                val userResponse = UserResponse(
+                    id = uid,
+                    email = email,
+                    name = name,
+                    avatarUrl = null,
+                    avatarPublicId = null,
+                    bio = null,
+                    createdAt = Timestamp.now(),
+                )
 
                 AppResult.Success(userResponse.toDomain())
             } catch (e: Exception) {
@@ -117,4 +132,47 @@ class FirebaseAuthRepository @Inject constructor(
             else -> AppError.Unknown(e)
         }
     }
+
+    override fun observeEmailVerified(): Flow<Boolean> = callbackFlow {
+        val listener = FirebaseAuth.IdTokenListener { auth ->
+            trySend(auth.currentUser?.isEmailVerified ?: false)
+        }
+        auth.addIdTokenListener(listener)
+        awaitClose { auth.removeIdTokenListener(listener) }
+    }.flowOn(dispatchers.io)
+
+    override suspend fun reloadCurrentUser(): AppResult<Boolean> =
+        withContext(dispatchers.io) {
+            try {
+                val user = auth.currentUser
+                    ?: return@withContext AppResult.Failure(AppError.Unauthorized)
+                user.reload().await()
+                // Принудительное обновление токена — иначе Firestore
+                // продолжит использовать старый токен с email_verified=false
+                user.getIdToken(true).await()
+                AppResult.Success(user.isEmailVerified)
+            } catch (e: Exception) {
+                AppResult.Failure(AppError.Unknown(e))
+            }
+        }
+
+    override suspend fun sendEmailVerification(): AppResult<Unit> =
+        withContext(dispatchers.io) {
+            try {
+                val user = auth.currentUser
+                    ?: return@withContext AppResult.Failure(AppError.Unauthorized)
+                user.sendEmailVerification().await()
+                AppResult.Success(Unit)
+            } catch (e: FirebaseAuthException) {
+                if (e.errorCode == "ERROR_TOO_MANY_REQUESTS") {
+                    AppResult.Failure(
+                        AppError.Server("RATE_LIMITED", "Слишком часто. Подождите минуту.")
+                    )
+                } else {
+                    AppResult.Failure(AppError.Unknown(e))
+                }
+            } catch (e: Exception) {
+                AppResult.Failure(AppError.Unknown(e))
+            }
+        }
 }

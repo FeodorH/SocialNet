@@ -1,10 +1,16 @@
-package com.example.socalnet.presentation.feed.components
+package com.example.socalnet.presentation.common.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,9 +23,14 @@ import com.example.socalnet.presentation.common.formatRelativeTime
 fun PostCard(
     post: Post,
     enabled: Boolean,                    // false для Guest
+    isSubscribed: Boolean = false,
+    isOwnPost: Boolean = false,
     onReactionClick: (ReactionType) -> Unit,
+    onSubscribeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var viewerIndex by remember { mutableStateOf<Int?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -29,9 +40,10 @@ fun PostCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) {
             UserAvatar(name = post.author.name, avatarUrl = post.author.avatarUrl)
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(
                     text = post.author.name,
                     style = MaterialTheme.typography.titleSmall,
@@ -40,6 +52,13 @@ fun PostCard(
                     text = formatRelativeTime(post.createdAt),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            if (enabled && !isOwnPost) {
+                SubscribeButton(
+                    isSubscribed = isSubscribed,
+                    onClick = onSubscribeClick,
                 )
             }
         }
@@ -51,7 +70,10 @@ fun PostCard(
             )
         }
 
-        PostImages(images = post.images)
+        PostImages(
+            images = post.images,
+            onImageClick = { index -> viewerIndex = index }
+        )
 
         ReactionBar(
             summary = post.reactions,
@@ -61,4 +83,34 @@ fun PostCard(
         )
     }
     HorizontalDivider(thickness = 0.5.dp)
+
+    viewerIndex?.let { index ->
+        ImageViewer(
+            images = post.images,
+            initialIndex = index,
+            onDismiss = { viewerIndex = null },
+        )
+    }
+}
+
+@Composable
+private fun SubscribeButton(
+    isSubscribed: Boolean,
+    onClick: () -> Unit,
+) {
+    if (isSubscribed) {
+        TextButton(
+            onClick = onClick,
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+        ) {
+            Text("Отписаться", style = MaterialTheme.typography.labelSmall)
+        }
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+        ) {
+            Text("Подписаться", style = MaterialTheme.typography.labelSmall)
+        }
+    }
 }

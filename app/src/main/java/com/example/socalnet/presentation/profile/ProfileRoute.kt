@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.socalnet.core.common.AppError
+import com.example.socalnet.presentation.profile.model.ProfileEvent
 
 @Composable
 fun ProfileRoute(
@@ -41,7 +42,7 @@ fun ProfileRoute(
         onUpdateNameBio = viewModel::updateNameAndBio,
         onEditPostClick = onEditPostClick,
         onDeletePostClick = viewModel::deletePost,
-        onReactionClick = { _, _ -> /* можно сделать изменение реакции */ },
+        onReactionClick = viewModel::onReactionClick,
         onLogoutClick = viewModel::logout,
     )
 }

@@ -103,4 +103,13 @@ class OfflineFirstAuthRepositoryImpl @Inject constructor(
 
     override suspend fun sendPasswordReset(email: String): AppResult<Unit> =
         firebaseAuthRepository.sendPasswordReset(email)
+
+    override fun observeEmailVerified(): Flow<Boolean> =
+        firebaseAuthRepository.observeEmailVerified()
+
+    override suspend fun reloadCurrentUser(): AppResult<Boolean> =
+        firebaseAuthRepository.reloadCurrentUser()
+
+    override suspend fun sendEmailVerification(): AppResult<Unit> =
+        firebaseAuthRepository.sendEmailVerification()
 }

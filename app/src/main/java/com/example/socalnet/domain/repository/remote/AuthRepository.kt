@@ -12,4 +12,7 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): AppResult<User>
     suspend fun logout(): AppResult<Unit>
     suspend fun sendPasswordReset(email: String): AppResult<Unit>
+    fun observeEmailVerified(): Flow<Boolean>
+    suspend fun reloadCurrentUser(): AppResult<Boolean>
+    suspend fun sendEmailVerification(): AppResult<Unit>
 }

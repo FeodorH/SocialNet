@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 class ToggleSubscriptionUseCase @Inject constructor(
     private val auth: OfflineFirstAuthRepository,
@@ -69,4 +70,20 @@ class SyncSubscriptionsUseCase @Inject constructor(
             )
         return subscriptions.syncSubscriptions(userId)
     }
+}
+
+/**
+ * Реактивный набор ID авторов, на которых подписан текущий пользователь.
+ * Используется в ленте для отображения кнопки «Подписаться/Отписаться».
+ */
+class ObserveSubscriptionIdsUseCase @Inject constructor(
+    private val auth: OfflineFirstAuthRepository,
+    private val subscriptions: OfflineFirstSubscriptionRepository,
+) {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    operator fun invoke(): Flow<Set<String>> =
+        auth.currentUserId.flatMapLatest { userId ->
+            if (userId == null) flowOf(emptySet())
+            else subscriptions.observeSubscriptionIds(userId).map { it.toSet() }
+        }
 }

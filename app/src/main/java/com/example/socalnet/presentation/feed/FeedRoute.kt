@@ -14,6 +14,7 @@ fun FeedRoute(
     snackbarHostState: SnackbarHostState,
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -26,9 +27,11 @@ fun FeedRoute(
 
     FeedScreen(
         state = state,
+        selectedTab = selectedTab,
         role = role,
         onTabSelected = viewModel::selectTab,
         onReactionClick = viewModel::onReactionClick,
+        onSubscribeClick = viewModel::onSubscribeClick,
         onRefresh = viewModel::refresh,
         onLoadMore = viewModel::loadMore,
     )

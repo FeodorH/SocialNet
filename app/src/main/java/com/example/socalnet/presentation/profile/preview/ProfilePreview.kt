@@ -16,7 +16,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
-// --- Inline fake data ---
 private val now = Clock.System.now()
 
 private val fakeUser = User(
@@ -28,8 +27,6 @@ private val fakeUser = User(
     createdAt = now - 30.days,
 )
 
-// Посты в профиле — все от одного автора (самого пользователя).
-// Это отличается от ленты, где авторы разные.
 private val authorOfUser = PostAuthor(
     id = fakeUser.id,
     name = fakeUser.name,

@@ -130,8 +130,6 @@ class GetPostUseCase @Inject constructor(
     suspend operator fun invoke(postId: String): AppResult<Post> = posts.syncPost(postId)
 }
 
-// --- НОВЫЕ: для профиля ---
-
 class ObserveUserPostsUseCase @Inject constructor(
     private val posts: OfflineFirstPostRepository
 ) {
