@@ -17,7 +17,7 @@ fun ProfileRoute(
     onEditPostClick: (String) -> Unit,
     onLoggedOut: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    viewModel: ProfileViewModel = hiltViewModel(),
+    viewModel: OwnProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

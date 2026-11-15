@@ -11,7 +11,7 @@ import com.example.socalnet.core.model.ReactionSummary
 import com.example.socalnet.core.model.ReactionType
 import com.example.socalnet.core.model.User
 import com.example.socalnet.presentation.profile.ProfileScreen
-import com.example.socalnet.presentation.profile.model.ProfileUiState
+import com.example.socalnet.presentation.profile.model.OwnProfileUiState
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
@@ -61,7 +61,7 @@ private val userPosts = listOf(
 )
 
 private val profileContentState = UiState.Content(
-    ProfileUiState(
+    OwnProfileUiState(
         user = fakeUser,
         posts = userPosts,
     )
@@ -91,7 +91,7 @@ private fun ProfileEmptyPostsPreview() {
     MaterialTheme {
         ProfileScreen(
             state = UiState.Content(
-                ProfileUiState(user = fakeUser, posts = emptyList())
+                OwnProfileUiState(user = fakeUser, posts = emptyList())
             ),
             role = true,
             onLoginClick = {}, onRegisterClick = {},

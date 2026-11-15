@@ -27,6 +27,7 @@ fun FeedScreen(
     onTabSelected: (FeedType) -> Unit,
     onReactionClick: (postId: String, type: ReactionType) -> Unit,
     onSubscribeClick: (authorId: String, isSubscribed: Boolean) -> Unit,
+    onAuthorClick :(authorId: String) -> Unit,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,6 +72,7 @@ fun FeedScreen(
                 isUser = role,
                 onReactionClick = onReactionClick,
                 onSubscribeClick = onSubscribeClick,
+                onAuthorClick = onAuthorClick,
                 onRefresh = onRefresh,
                 onLoadMore = onLoadMore,
             )
@@ -85,6 +87,7 @@ private fun ContentState(
     isUser: Boolean,
     onReactionClick: (postId: String, type: ReactionType) -> Unit,
     onSubscribeClick: (authorId: String, isSubscribed: Boolean) -> Unit,
+    onAuthorClick: (authorId: String) -> Unit,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
 ) {
@@ -125,12 +128,15 @@ private fun ContentState(
                     isOwnPost = isOwnPost,
                     onReactionClick = { type -> onReactionClick(post.id, type) },
                     onSubscribeClick = { onSubscribeClick(post.author.id, isSubscribed) },
+                    onAuthorClick = { onAuthorClick(post.author.id) }
                 )
             }
             if (state.isLoadingMore) {
                 item {
                     Box(
-                        Modifier.fillMaxWidth().padding(16.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator() }
                 }
@@ -138,7 +144,9 @@ private fun ContentState(
             if (!state.hasMore && state.posts.isNotEmpty()) {
                 item {
                     Box(
-                        Modifier.fillMaxWidth().padding(16.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -163,7 +171,9 @@ private fun LoadingState() {
 @Composable
 private fun EmptyState(message: String, hint: String) {
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -181,7 +191,9 @@ private fun EmptyState(message: String, hint: String) {
 @Composable
 private fun ErrorState(message: String, onRetry: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

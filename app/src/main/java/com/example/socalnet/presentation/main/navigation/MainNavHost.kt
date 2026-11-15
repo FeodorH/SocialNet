@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,6 +24,7 @@ import com.example.socalnet.presentation.auth.ResetPasswordRoute
 import com.example.socalnet.presentation.feed.FeedRoute
 import com.example.socalnet.presentation.main.components.MainBottomBar
 import com.example.socalnet.presentation.post.SavePostRoute
+import com.example.socalnet.presentation.profile.OtherProfileRoute
 import com.example.socalnet.presentation.profile.ProfileRoute
 
 @Composable
@@ -69,6 +71,16 @@ fun MainNavHost(role: Boolean) {
             composable(MainRoutes.FEED) {
                 FeedRoute(
                     role = role,
+                    onOwnProfileClick = {
+                        navController.navigate(MainRoutes.PROFILE) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onOtherProfileClick = { authorId ->
+                        navController.navigate(MainRoutes.userProfile(authorId))
+                    },
                     snackbarHostState = snackbarHostState,
                 )
             }
@@ -101,6 +113,20 @@ fun MainNavHost(role: Boolean) {
                         navController.navigate(MainRoutes.savePost(postId))
                     },
                     onLoggedOut = { /* authState сам переключит */ },
+                    snackbarHostState = snackbarHostState,
+                )
+            }
+
+            composable(
+                route = MainRoutes.USER_PROFILE,             // "user_profile/{userId}"
+                arguments = listOf(
+                    navArgument(MainRoutes.USER_PROFILE_ARG) {   // "userId"
+                        type = NavType.StringType
+                    }
+                ),
+            ) {
+                OtherProfileRoute(
+                    onBack = { navController.popBackStack() },
                     snackbarHostState = snackbarHostState,
                 )
             }

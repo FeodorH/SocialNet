@@ -1,5 +1,6 @@
 package com.example.socalnet.presentation.common.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -23,10 +24,12 @@ import com.example.socalnet.presentation.common.formatRelativeTime
 fun PostCard(
     post: Post,
     enabled: Boolean,                    // false для Guest
+    showSubscribeButton: Boolean = true, // чтобы не видеть кнопку в просмотре профиля
     isSubscribed: Boolean = false,
     isOwnPost: Boolean = false,
     onReactionClick: (ReactionType) -> Unit,
     onSubscribeClick: () -> Unit = {},
+    onAuthorClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var viewerIndex by remember { mutableStateOf<Int?>(null) }
@@ -37,29 +40,29 @@ fun PostCard(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            UserAvatar(name = post.author.name, avatarUrl = post.author.avatarUrl)
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = post.author.name,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                Text(
-                    text = formatRelativeTime(post.createdAt),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onAuthorClick),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                UserAvatar(post.author.name, post.author.avatarUrl)
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = post.author.name,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = formatRelativeTime(post.createdAt),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-
-            if (enabled && !isOwnPost) {
-                SubscribeButton(
-                    isSubscribed = isSubscribed,
-                    onClick = onSubscribeClick,
-                )
+            if (enabled && !isOwnPost && showSubscribeButton) {
+                SubscribeButton(isSubscribed, onSubscribeClick)
             }
         }
 

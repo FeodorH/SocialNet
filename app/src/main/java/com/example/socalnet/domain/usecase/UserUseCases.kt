@@ -66,3 +66,23 @@ class SyncCurrentUserUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): AppResult<User> = auth.syncCurrentUser()
 }
+
+/**
+ * Реактивный поток профиля произвольного пользователя из Room.
+ * Используется в OtherProfileViewModel.
+ */
+class ObserveUserUseCase @Inject constructor(
+    private val users: OfflineFirstUserRepository,
+) {
+    operator fun invoke(userId: String): Flow<User?> = users.observeUser(userId)
+}
+
+/**
+ * Синхронизация профиля произвольного пользователя (сеть → Room).
+ * Используется в OtherProfileViewModel при pull-to-refresh и в init.
+ */
+class SyncUserUseCase @Inject constructor(
+    private val users: OfflineFirstUserRepository,
+) {
+    suspend operator fun invoke(userId: String): AppResult<User> = users.syncUser(userId)
+}

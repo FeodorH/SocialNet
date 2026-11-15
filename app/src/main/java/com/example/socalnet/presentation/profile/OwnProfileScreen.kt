@@ -18,12 +18,13 @@ import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.model.ReactionType
 import com.example.socalnet.presentation.profile.components.EditProfileDialog
 import com.example.socalnet.presentation.profile.components.OwnPostCard
-import com.example.socalnet.presentation.profile.components.ProfileHeader
-import com.example.socalnet.presentation.profile.model.ProfileUiState
+import com.example.socalnet.presentation.profile.components.OwnProfileActions
+import com.example.socalnet.presentation.profile.components.ProfileInfoSection
+import com.example.socalnet.presentation.profile.model.OwnProfileUiState
 
 @Composable
 fun ProfileScreen(
-    state: UiState<ProfileUiState>,
+    state: UiState<OwnProfileUiState>,
     role: Boolean,                 // false = Guest → показываем GuestProfilePrompt
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
@@ -76,7 +77,7 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ContentState(
-    state: ProfileUiState,
+    state: OwnProfileUiState,
     onRefresh: () -> Unit,
     onAvatarPicked: (String) -> Unit,
     onRemoveAvatar: () -> Unit,
@@ -104,16 +105,22 @@ private fun ContentState(
     ) {
         LazyColumn(Modifier.fillMaxSize()) {
 
-            // Header профиля
+            // Профиль
             item {
-                ProfileHeader(
-                    user = state.user,
-                    postsCount = state.posts.size,
-                    isUploadingAvatar = state.isUploadingAvatar,
-                    onAvatarClick = { showRemoveAvatarDialog = true },
-                    onEditProfileClick = { showEditDialog = true },
-                    onLogoutClick = onLogoutClick,
-                )
+                Column(Modifier.fillMaxWidth()) {
+                    ProfileInfoSection(
+                        user = state.user,
+                        postsCount = state.posts.size,
+                        onAvatarClick = { showRemoveAvatarDialog = true },
+                        isUploadingAvatar = state.isUploadingAvatar,
+                    )
+                    OwnProfileActions(
+                        isUpdating = state.isUpdatingProfile,
+                        onEditClick = { showEditDialog = true },
+                        onLogoutClick = onLogoutClick,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
                 HorizontalDivider()
             }
 

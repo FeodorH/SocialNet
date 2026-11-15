@@ -17,7 +17,7 @@ import com.example.socalnet.domain.usecase.SyncUserPostsUseCase
 import com.example.socalnet.domain.usecase.ToggleReactionUseCase
 import com.example.socalnet.domain.usecase.UpdateProfileUseCase
 import com.example.socalnet.presentation.profile.model.ProfileEvent
-import com.example.socalnet.presentation.profile.model.ProfileUiState
+import com.example.socalnet.presentation.profile.model.OwnProfileUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -36,7 +36,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class OwnProfileViewModel @Inject constructor(
     private val observeCurrentUser: ObserveCurrentUserUseCase,
     private val observeUserPosts: ObserveUserPostsUseCase,
     private val syncCurrentUser: SyncCurrentUserUseCase,
@@ -62,7 +62,7 @@ class ProfileViewModel @Inject constructor(
             else observeUserPosts(user.id)
         }
 
-    val state: StateFlow<UiState<ProfileUiState>> = combine(
+    val state: StateFlow<UiState<OwnProfileUiState>> = combine(
         observeCurrentUser(),
         postsFlow,
         _isRefreshingPosts,
@@ -75,7 +75,7 @@ class ProfileViewModel @Inject constructor(
             UiState.Loading
         } else {
             UiState.Content(
-                ProfileUiState(
+                OwnProfileUiState(
                     user = user,
                     posts = posts,
                     isRefreshingPosts = refreshing,

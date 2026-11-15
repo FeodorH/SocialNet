@@ -3,7 +3,7 @@ package com.example.socalnet.presentation.profile.model
 import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.model.User
 
-data class ProfileUiState(
+data class OwnProfileUiState(
     val user: User,
     val posts: List<Post> = emptyList(),
 

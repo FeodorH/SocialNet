@@ -91,6 +91,7 @@ private fun FeedUserPreview() {
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
             onSubscribeClick = {_, _ -> },
+            onAuthorClick = {_ ->},
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -106,6 +107,7 @@ private fun FeedGuestPreview() {
             role = false,
             onTabSelected = {}, onReactionClick = { _, _ -> },
             onSubscribeClick = {_, _ -> },
+            onAuthorClick = {_ ->},
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -121,6 +123,7 @@ private fun FeedEmptyPreview() {
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
             onSubscribeClick = {_, _ -> },
+            onAuthorClick = {_ ->},
             onRefresh = {}, onLoadMore = {},
         )
     }
@@ -136,6 +139,7 @@ private fun FeedErrorPreview() {
             role = true,
             onTabSelected = {}, onReactionClick = { _, _ -> },
             onSubscribeClick = {_, _ -> },
+            onAuthorClick = {_ ->},
             onRefresh = {}, onLoadMore = {},
         )
     }
