@@ -13,6 +13,7 @@ import com.example.socalnet.core.utils.CursorCodec
 import com.example.socalnet.data.dto.PostResponse
 import com.example.socalnet.data.dto.UserResponse
 import com.example.socalnet.data.mapper.toDomain
+import com.example.socalnet.data.repository.remote.FirebaseFeedRepository.Companion.MAX_WHERE_IN_SIZE
 import com.example.socalnet.domain.repository.remote.AuthRepository
 import com.example.socalnet.domain.repository.remote.FeedRepository
 import com.example.socalnet.domain.repository.remote.SubscriptionRepository
@@ -23,9 +24,15 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 
 class FirebaseFeedRepository @Inject constructor(
     private val authRepository: AuthRepository,
@@ -52,10 +59,40 @@ class FirebaseFeedRepository @Inject constructor(
                 FeedType.GENERAL -> loadGeneralFeed(cursor, pageSize)
                 FeedType.SUBSCRIPTIONS -> loadSubscriptionsFeed(cursor, pageSize)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppResult.Failure(AppError.Unknown(e))
         }
     }
+
+    override fun observeFeedRealtime(
+        type: FeedType,
+        windowSize: Int,
+    ): Flow<List<Post>> = callbackFlow {
+        val query = buildFeedQuery(type, windowSize)
+
+        if (query == null) {
+            close()
+            return@callbackFlow
+        }
+
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error); return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                launch {
+                    val responses = snapshot.documents.mapNotNull {
+                        it.toObject(PostResponse::class.java)
+                    }
+                    trySend(enrichPosts(responses))
+                }
+            }
+        }
+
+        awaitClose { listener.remove() }
+    }.flowOn(dispatchers.io)
 
     private suspend fun loadGeneralFeed(
         cursor: PageCursor?,
@@ -63,7 +100,7 @@ class FirebaseFeedRepository @Inject constructor(
     ): AppResult<PostPage> {
         var query = postsCollection
             .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit((pageSize + 1).toLong())
+            .limit((pageSize).toLong())
 
         if (cursor != null) {
             val (timestamp, postId) = CursorCodec.decode(cursor)
@@ -71,18 +108,20 @@ class FirebaseFeedRepository @Inject constructor(
         }
 
         val snapshot = query.get().await()
-        val postResponses = snapshot.documents.mapNotNull {
-            it.toObject(PostResponse::class.java)
-        }
+        val docs = snapshot.documents
+        val hasMore = docs.size > pageSize
+        val pageDocs = if (hasMore) docs.take(pageSize) else docs
 
+        val postResponses = pageDocs.mapNotNull { it.toObject(PostResponse::class.java) }
         val posts = enrichPosts(postResponses)
-        val lastDoc = snapshot.documents.lastOrNull()
-        val nextCursor = if (lastDoc != null && snapshot.documents.size == pageSize) {
+
+        val lastDoc = pageDocs.lastOrNull()
+        val nextCursor = if (hasMore && lastDoc != null) {
             lastDoc.getTimestamp("createdAt")?.let { CursorCodec.encode(it, lastDoc.id) }
         } else null
 
         return AppResult.Success(
-            PostPage(posts = posts, nextCursor = nextCursor, hasMore = nextCursor != null)
+            PostPage(posts = posts, nextCursor = nextCursor, hasMore = hasMore)
         )
     }
 
@@ -112,7 +151,7 @@ class FirebaseFeedRepository @Inject constructor(
                     var query = postsCollection
                         .whereIn("authorId", chunk)
                         .orderBy("createdAt", Query.Direction.DESCENDING)
-                        .limit((pageSize + 1).toLong())
+                        .limit((pageSize).toLong())
 
                     if (cursor != null) {
                         val (timestamp, postId) = CursorCodec.decode(cursor)
@@ -212,5 +251,31 @@ class FirebaseFeedRepository @Inject constructor(
                 postId to type
             }
         }.awaitAll().toMap()
+    }
+
+    /**
+     * Собирает query так же, как loadFeed, но без пагинации — только верхнее окно.
+     * Возвращает null для SUBSCRIPTIONS без авторизации.
+     */
+    private suspend fun buildFeedQuery(
+        type: FeedType,
+        windowSize: Int
+    ): Query? = when (type) {
+        FeedType.GENERAL -> postsCollection
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(windowSize.toLong())
+
+        FeedType.SUBSCRIPTIONS -> {
+            val currentUserId = authRepository.currentUserId.first()
+                ?: return null
+            val followingIds = (subscriptionRepository.getSubscriptionIds(currentUserId)
+                    as? AppResult.Success)?.data ?: return null
+            if (followingIds.isEmpty()) return null
+            val chunk = followingIds.take(MAX_WHERE_IN_SIZE)
+            postsCollection
+                .whereIn("authorId", chunk)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(windowSize.toLong())
+        }
     }
 }

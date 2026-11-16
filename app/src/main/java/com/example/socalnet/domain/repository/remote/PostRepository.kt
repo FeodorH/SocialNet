@@ -5,6 +5,7 @@ import com.example.socalnet.core.model.ImageRef
 import com.example.socalnet.core.model.PageCursor
 import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.model.PostPage
+import kotlinx.coroutines.flow.Flow
 
 interface PostRepository {
     suspend fun createPost(
@@ -28,5 +29,7 @@ interface PostRepository {
         cursor: PageCursor?,
         pageSize: Int,
     ): AppResult<PostPage>
+
+    fun observeUserPostsRealtime(userId: String, windowSize: Int): Flow<List<Post>>
 
 }

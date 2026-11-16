@@ -59,6 +59,8 @@ class FeedViewModel @Inject constructor(
     private val subscriptionIdsFlow = observeSubscriptionIds()
     val selectedTab: StateFlow<FeedType> = _selectedTab.asStateFlow()
 
+    private val _autoLoadMoreBlocked = MutableStateFlow(false) // состояние блокировки загрузки постов
+
     private var cursor: PageCursor? = null
 
     /** События (Snackbar и т.п.) */
@@ -68,10 +70,7 @@ class FeedViewModel @Inject constructor(
 
     private val feedFlow: Flow<List<Post>> =
         _selectedTab.flatMapLatest {
-            flow{
-                emit(emptyList())
-                emitAll(observeFeed(it))
-            }
+            observeFeed(it)
         }
 
     val state: StateFlow<UiState<FeedUiState>> = combine(
@@ -114,22 +113,20 @@ class FeedViewModel @Inject constructor(
 
     fun selectTab(tab: FeedType) = viewModelScope.launch {
         if (tab == _selectedTab.value) return@launch
-
         if (tab == FeedType.SUBSCRIPTIONS && observeCurrentUser().first() == null) {
             _events.send(UiEvent.ShowMessage("Войдите, чтобы увидеть подписки"))
             return@launch
         }
-
         _selectedTab.value = tab
         cursor = null
         _hasMore.value = true
         _initialAttemptCompleted.value = false
         _initialError.value = null
-
         performSync(tab, cursor = null)
     }
 
     fun refresh() {
+        if (_isRefreshing.value || _isLoadingMore.value) return
         cursor = null
         _hasMore.value = true
         performSync(_selectedTab.value, cursor = null)
@@ -137,6 +134,7 @@ class FeedViewModel @Inject constructor(
 
     fun loadMore() {
         if (_isRefreshing.value || _isLoadingMore.value) return
+        if (_autoLoadMoreBlocked.value) return
         val c = cursor ?: return
         if (!_hasMore.value) return
         performSync(_selectedTab.value, c)
@@ -165,31 +163,43 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    private fun performSync(type: FeedType, cursor: PageCursor?) = viewModelScope.launch {
-        if (cursor == null) {
+    private fun performSync(type: FeedType, cursor: PageCursor?) {
+        val isRefresh = cursor == null
+
+        if (isRefresh) {
+            if (_isRefreshing.value) return
             _isRefreshing.value = true
+            _autoLoadMoreBlocked.value = false
         } else {
+            if (_isLoadingMore.value) return
             _isLoadingMore.value = true
         }
+        viewModelScope.launch {
+            try {
+                when (val result = syncFeedUseCase(type, cursor)) {
+                    is AppResult.Success -> {
+                        this@FeedViewModel.cursor = result.data
+                        _hasMore.value = result.data != null
+                        _initialAttemptCompleted.value = true
+                        _initialError.value = null
+                    }
 
-        when (val result = syncFeedUseCase(type, cursor)) {
-            is AppResult.Success -> {
-                this@FeedViewModel.cursor = result.data
-                _hasMore.value = result.data != null
-                _initialAttemptCompleted.value = true
-                _initialError.value = null
-            }
-            is AppResult.Failure -> {
-                _initialAttemptCompleted.value = true
-                if (state.value is UiState.Content) {
-                    _events.send(UiEvent.ShowMessage("Не удалось загрузить: ${result.error}"))
-                } else {
-                    _initialError.value = result.error.toString()
+                    is AppResult.Failure -> {
+                        _initialAttemptCompleted.value = true
+                        if (cursor != null) {
+                            _autoLoadMoreBlocked.value = true
+                        }
+                        if (state.value is UiState.Content) {
+                            _events.send(UiEvent.ShowMessage("Не удалось загрузить"))
+                        } else {
+                            _initialError.value = result.error.toString()
+                        }
+                    }
                 }
+            } finally {
+                if (isRefresh) _isRefreshing.value = false
+                else _isLoadingMore.value = false
             }
         }
-
-        _isRefreshing.value = false
-        _isLoadingMore.value = false
     }
 }

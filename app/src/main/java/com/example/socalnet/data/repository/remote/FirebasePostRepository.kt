@@ -19,7 +19,12 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -171,6 +176,36 @@ class FirebasePostRepository @Inject constructor(
             AppResult.Failure(AppError.Unknown(e))
         }
     }
+
+    override fun observeUserPostsRealtime(
+        userId: String,
+        windowSize: Int,
+    ): Flow<List<Post>> = callbackFlow {
+        val query = postsCollection
+            .whereEqualTo("authorId", userId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(windowSize.toLong())
+
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) { close(error); return@addSnapshotListener }
+            if (snapshot != null) {
+                launch {
+                    val author = getAuthor(userId) ?: return@launch
+                    val currentUserId = authRepository.currentUserId.first()
+                    val posts = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(PostResponse::class.java)?.let { response ->
+                            val myReaction = if (currentUserId != null) {
+                                getMyReaction(response.id)
+                            } else null
+                            response.toDomain(author, myReaction)
+                        }
+                    }
+                    trySend(posts)
+                }
+            }
+        }
+        awaitClose { listener.remove() }
+    }.flowOn(dispatchers.io)
 
     private suspend fun getAuthor(authorId: String): PostAuthor? {
         val snapshot = usersCollection.document(authorId).get().await()

@@ -1,17 +1,23 @@
 package com.example.socalnet.data.repository.common
 
 import com.example.socalnet.core.common.AppResult
+import com.example.socalnet.core.common.WorkingRules.FEED_WINDOW
 import com.example.socalnet.core.model.ImageRef
 import com.example.socalnet.core.model.PageCursor
 import com.example.socalnet.core.model.Post
 import com.example.socalnet.core.utils.AppDispatchers
 import com.example.socalnet.data.local.dao.PostDao
+import com.example.socalnet.data.local.entity.PostEntity
 import com.example.socalnet.data.mapper.toDomain
 import com.example.socalnet.data.mapper.toEntity
 import com.example.socalnet.domain.repository.remote.PostRepository
 import com.example.socalnet.domain.repository.common.OfflineFirstPostRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -21,10 +27,22 @@ class OfflineFirstPostRepositoryImpl @Inject constructor(
     private val dispatchers: AppDispatchers,
 ) : OfflineFirstPostRepository {
 
-    override fun observeUserPosts(userId: String): Flow<List<Post>> =
-        postDao.observeUserPosts(userId).map { entities ->
-            entities.map { it.toDomain() }
+    override fun observeUserPosts(userId: String): Flow<List<Post>> = flow {
+        coroutineScope {
+            launch {
+                remotePostRepository
+                    .observeUserPostsRealtime(userId, FEED_WINDOW)
+                    .collect { posts ->
+                        if (posts.isNotEmpty()) {
+                            postDao.upsertPosts(posts.map { it.toEntity() })
+                        }
+                    }
+            }
+            emitAll(
+                postDao.observeUserPosts(userId).map { it.map(PostEntity::toDomain) }
+            )
         }
+    }
 
     override fun observePost(postId: String): Flow<Post?> =
         postDao.observePost(postId).map { it?.toDomain() }

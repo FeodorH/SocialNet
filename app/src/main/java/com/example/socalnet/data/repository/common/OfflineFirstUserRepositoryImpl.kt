@@ -9,8 +9,12 @@ import com.example.socalnet.data.mapper.toDomain
 import com.example.socalnet.data.mapper.toEntity
 import com.example.socalnet.domain.repository.remote.UserRepository
 import com.example.socalnet.domain.repository.common.OfflineFirstUserRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -25,8 +29,16 @@ class OfflineFirstUserRepositoryImpl @Inject constructor(
      * Реактивный поток из Room. Эмитит мгновенно то, что есть в кэше.
      * Свежесть обеспечивается фоновым вызовом syncUser() из ViewModel.
      */
-    override fun observeUser(userId: String): Flow<User?> =
-        userDao.observeUser(userId).map { it?.toDomain() }
+    override fun observeUser(userId: String): Flow<User?> = flow {
+        coroutineScope {
+            launch {
+                firebaseUserRepository.observeUser(userId).collect { user ->
+                    if (user != null) userDao.upsertUser(user.toEntity())
+                }
+            }
+            emitAll(userDao.observeUser(userId).map { it?.toDomain() })
+        }
+    }
 
     /**
      * Сначала сеть. Если сеть доступна — обновляем Room и возвращаем свежие данные.

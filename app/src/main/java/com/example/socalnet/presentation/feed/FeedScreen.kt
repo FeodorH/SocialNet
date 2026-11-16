@@ -8,6 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import com.example.socalnet.core.model.FeedType
 import com.example.socalnet.core.model.ReactionType
 import com.example.socalnet.presentation.common.components.PostCard
 import com.example.socalnet.presentation.feed.model.FeedUiState
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun FeedScreen(
@@ -92,17 +95,19 @@ private fun ContentState(
     onLoadMore: () -> Unit,
 ) {
     val listState = rememberLazyListState()
+    val latestState by rememberUpdatedState(state)
 
     // Триггер пагинации: когда пользователь приблизился к концу
-    LaunchedEffect(listState, state.posts.size) {
+    LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .distinctUntilChanged()
             .collect { lastVisible ->
-                // Порог: 3 элемента до конца — начинаем грузить
+                val s = latestState
                 if (lastVisible != null
-                    && lastVisible >= state.posts.size - 3
-                    && state.hasMore
-                    && !state.isLoadingMore
-                    && !state.isRefreshing
+                    && lastVisible >= s.posts.size - 3
+                    && s.hasMore
+                    && !s.isLoadingMore
+                    && !s.isRefreshing
                 ) {
                     onLoadMore()
                 }
@@ -126,9 +131,10 @@ private fun ContentState(
                     enabled = isUser,
                     isSubscribed = isSubscribed,
                     isOwnPost = isOwnPost,
+                    showSubscribeButton = true,
                     onReactionClick = { type -> onReactionClick(post.id, type) },
                     onSubscribeClick = { onSubscribeClick(post.author.id, isSubscribed) },
-                    onAuthorClick = { onAuthorClick(post.author.id) }
+                    onAuthorClick = { onAuthorClick(post.author.id) },
                 )
             }
             if (state.isLoadingMore) {
