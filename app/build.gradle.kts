@@ -18,13 +18,13 @@ val cloudinaryCloudName: String = localProperties.getProperty("CLOUDINARY_CLOUD_
 val cloudinaryUploadPreset: String = localProperties.getProperty("CLOUDINARY_UPLOAD_PRESET") ?: ""
 
 android {
-    namespace = "com.example.socalnet"
+    namespace = "com.example.socialnet"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.socalnet"
+        applicationId = "com.example.socialnet"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
