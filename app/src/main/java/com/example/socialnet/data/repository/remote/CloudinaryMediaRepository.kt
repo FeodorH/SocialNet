@@ -14,7 +14,6 @@ import com.example.socialnet.data.remote.cloudinary.CloudinaryApi
 import com.example.socialnet.domain.provider.ImageMetadataProvider
 import com.example.socialnet.domain.repository.remote.MediaRepository
 import com.example.socialnet.domain.vaildation.ImageValidator
-import jakarta.inject.Named
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
@@ -22,6 +21,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.collections.get
 import androidx.core.net.toUri
+import javax.inject.Named
 
 class CloudinaryMediaRepository @Inject constructor(
     private val dispatchers: AppDispatchers,
@@ -96,10 +96,7 @@ class CloudinaryMediaRepository @Inject constructor(
                 val response = cloudinaryApi.deleteByToken(cloudName, token)
                 if (response.isSuccessful) AppResult.Success(Unit)
                 else AppResult.Failure(
-                    AppError.Server(
-                        code = response.code().toString(),
-                        details = response.errorBody()?.string()
-                    )
+                    AppError.Server(code = response.code().toString())
                 )
             } catch (e: Exception) {
                 AppResult.Failure(AppError.Unknown(e))
@@ -119,8 +116,7 @@ class CloudinaryMediaRepository @Inject constructor(
             } else {
                 AppResult.Failure(
                     AppError.Server(
-                        code = "DELETE_BY_TOKEN_PARTIAL",
-                        details = "Не удалось удалить ${failures.size}/${tokens.size}"
+                        code = "DELETE_BY_TOKEN_PARTIAL"
                     )
                 )
             }

@@ -16,6 +16,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
@@ -37,19 +38,9 @@ class FirebaseSubscriptionRepository @Inject constructor(
     private val firestore = Firebase.firestore
     private val usersCollection = firestore.collection("users")
 
-    // --- ПОДПИСКА / ОТПИСКА ---
-
     override suspend fun subscribe(fromId: String, toId: String): AppResult<Unit> =
         withContext(dispatchers.io) {
             try {
-                if (fromId == toId) {
-                    return@withContext AppResult.Failure(
-                        AppError.Validation(
-                            AppError.Validation.Field.NAME,
-                            "Нельзя подписаться на самого себя"
-                        )
-                    )
-                }
 
                 val batch = firestore.batch()
                 val data = mapOf("createdAt" to FieldValue.serverTimestamp())
@@ -89,8 +80,7 @@ class FirebaseSubscriptionRepository @Inject constructor(
             }
         }
 
-    // --- REALTIME-СТАТУС ПОДПИСКИ ---
-
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeIsSubscribed(authorId: String): Flow<Boolean> =
         authRepository.currentUserId
             .flatMapLatest { currentUserId ->
@@ -117,8 +107,6 @@ class FirebaseSubscriptionRepository @Inject constructor(
 
             awaitClose { listener.remove() }
         }
-
-    // --- СПИСКИ ПОДПИСОК / ПОДПИСЧИКОВ ---
 
     override suspend fun getFollowing(
         userId: String,
@@ -152,8 +140,6 @@ class FirebaseSubscriptionRepository @Inject constructor(
         }
     }
 
-    // --- ID ПОДПИСОК (ДЛЯ ЛЕНТЫ) ---
-
     override suspend fun getSubscriptionIds(userId: String): AppResult<List<String>> =
         withContext(dispatchers.io) {
             try {
@@ -166,8 +152,6 @@ class FirebaseSubscriptionRepository @Inject constructor(
             }
         }
 
-    // --- ВСПОМОГАТЕЛЬНЫЕ ---
-
     /**
      * Общая логика пагинации для following/followers.
      * Оба списка хранят только ID пользователей + createdAt.
@@ -178,10 +162,9 @@ class FirebaseSubscriptionRepository @Inject constructor(
         cursor: PageCursor?,
         pageSize: Int
     ): AppResult<UserPage> {
-        // pageSize + 1 — чтобы точно определить, есть ли следующая страница
         var query = collectionPath
             .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit((pageSize + 1).toLong())
+            .limit((pageSize).toLong())
 
         if (cursor != null) {
             val (timestamp, id) = CursorCodec.decode(cursor)

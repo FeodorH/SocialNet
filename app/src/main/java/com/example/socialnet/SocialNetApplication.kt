@@ -11,10 +11,10 @@ class SocialNetApplication : Application() {
         super.onCreate()
 
         require(BuildConfig.CLOUDINARY_CLOUD_NAME.isNotBlank()) {
-            "CLOUDINARY_CLOUD_NAME не задан в local.properties"
+            "CLOUDINARY_CLOUD_NAME can`t contains in local.properties"
         }
         require(BuildConfig.CLOUDINARY_UPLOAD_PRESET.isNotBlank()) {
-            "CLOUDINARY_UPLOAD_PRESET не задан в local.properties"
+            "CLOUDINARY_UPLOAD_PRESET can`t contains in local.properties"
         }
 
         MediaManager.init(

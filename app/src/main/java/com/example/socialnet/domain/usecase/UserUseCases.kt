@@ -43,7 +43,7 @@ class UpdateProfileUseCase @Inject constructor(
 
         if (name != null && name.isBlank()) {
             return AppResult.Failure(
-                AppError.Validation(AppError.Validation.Field.NAME, "Имя не может быть пустым")
+                AppError.Validation.Required(AppError.Validation.Field.NAME)
             )
         }
 

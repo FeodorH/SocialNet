@@ -9,6 +9,7 @@ import com.example.socialnet.domain.usecase.RegisterUseCases
 import com.example.socialnet.domain.usecase.ResetPasswordUseCase
 import com.example.socialnet.presentation.auth.model.AuthEvent
 import com.example.socialnet.presentation.auth.model.AuthUiState
+import com.example.socialnet.presentation.common.ErrorMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,7 @@ class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCases,
     private val resetPasswordUseCase: ResetPasswordUseCase,
+    private val errorMapper: ErrorMapper
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthUiState())
@@ -104,19 +106,20 @@ class AuthViewModel @Inject constructor(
 
     private fun applyError(error: AppError) {
         _state.update { current ->
-            val next = when (error) {
-                is AppError.Validation -> when (error.field) {
-                    AppError.Validation.Field.EMAIL -> current.copy(emailError = error.reason)
-                    AppError.Validation.Field.PASSWORD -> current.copy(passwordError = error.reason)
-                    AppError.Validation.Field.NAME -> current.copy(nameError = error.reason)
-                    else -> current.copy(generalError = error.reason)
-                }
-                AppError.Unauthorized -> current.copy(generalError = "Неверный email или пароль")
-                AppError.Network -> current.copy(generalError = "Нет подключения к интернету")
-                is AppError.Server -> current.copy(generalError = "Ошибка сервера. Попробуйте позже")
-                else -> current.copy(generalError = "Что-то пошло не так")
-            }
-            next.copy(isLoading = false)
+            val withField = current.withFieldError(error)
+            (withField ?: current.copy(generalError = errorMapper.message(error)))
+                .copy(isLoading = false)
+        }
+    }
+
+    private fun AuthUiState.withFieldError(error: AppError): AuthUiState? {
+        val (field, msg) = errorMapper.fieldError(error) ?: return null
+        return when (field) {
+            AppError.Validation.Field.EMAIL -> copy(emailError = msg)
+            AppError.Validation.Field.PASSWORD -> copy(passwordError = msg)
+            AppError.Validation.Field.NAME -> copy(nameError = msg)
+            AppError.Validation.Field.TEXT,
+            AppError.Validation.Field.IMAGES -> null
         }
     }
 }

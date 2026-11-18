@@ -25,10 +25,7 @@ class ToggleSubscriptionUseCase @Inject constructor(
 
         if (fromId == toId) {
             return AppResult.Failure(
-                AppError.Validation(
-                    AppError.Validation.Field.NAME,
-                    "Нельзя подписаться на самого себя"
-                )
+                AppError.SelfSubscription
             )
         }
 

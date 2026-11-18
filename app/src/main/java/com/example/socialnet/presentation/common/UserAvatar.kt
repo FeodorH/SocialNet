@@ -12,9 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.socialnet.R
 
 @Composable
 fun UserAvatar(
@@ -41,7 +43,7 @@ fun UserAvatar(
     } else {
         AsyncImage(
             model = avatarUrl,
-            contentDescription = "Аватар $name",
+            contentDescription = stringResource(R.string.avatar) + name,
             contentScale = ContentScale.Crop,
             modifier = modifier
                 .size(size)

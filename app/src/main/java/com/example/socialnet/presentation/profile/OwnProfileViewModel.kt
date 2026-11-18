@@ -1,7 +1,9 @@
 package com.example.socialnet.presentation.profile
 
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialnet.R
 import com.example.socialnet.core.common.AppResult
 import com.example.socialnet.core.common.UiState
 import com.example.socialnet.core.model.ImageRef
@@ -16,6 +18,7 @@ import com.example.socialnet.domain.usecase.SyncCurrentUserUseCase
 import com.example.socialnet.domain.usecase.SyncUserPostsUseCase
 import com.example.socialnet.domain.usecase.ToggleReactionUseCase
 import com.example.socialnet.domain.usecase.UpdateProfileUseCase
+import com.example.socialnet.presentation.common.UiStrings
 import com.example.socialnet.presentation.profile.model.ProfileEvent
 import com.example.socialnet.presentation.profile.model.OwnProfileUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +49,7 @@ class OwnProfileViewModel @Inject constructor(
     private val deletePostUc: DeletePostUseCase,
     private val logoutUc: LogoutUseCase,
     private val mediaRepository: MediaRepository,
+    private val uiStrings: UiStrings,
 ) : ViewModel() {
 
     private val _isRefreshingPosts = MutableStateFlow(false)
@@ -120,7 +124,7 @@ class OwnProfileViewModel @Inject constructor(
     fun updateNameAndBio(name: String, bio: String) = viewModelScope.launch {
         _isUpdatingProfile.value = true
         when (val r = updateProfile(name = name, bio = bio, avatarUrl = null, avatarPublicId = null)) {
-            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage("Профиль обновлён"))
+            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage(uiStrings.profileUpdated()))
             is AppResult.Failure -> _events.send(ProfileEvent.ShowError(r.error))
         }
         _isUpdatingProfile.value = false
@@ -141,9 +145,8 @@ class OwnProfileViewModel @Inject constructor(
                     avatarUrl = uploadResult.data.imageRef.url,
                     avatarPublicId = uploadResult.data.imageRef.publicId,
                 )) {
-                    is AppResult.Success -> _events.send(ProfileEvent.ShowMessage("Аватар обновлён"))
+                    is AppResult.Success -> _events.send(ProfileEvent.ShowMessage(uiStrings.avatarUpdated()))
                     is AppResult.Failure -> {
-                        // Компенсация: удаляем загруженный файл
                         uploadResult.data.deleteToken?.let { mediaRepository.deleteByToken(it) }
                         _events.send(ProfileEvent.ShowError(r.error))
                     }
@@ -159,7 +162,7 @@ class OwnProfileViewModel @Inject constructor(
         when (val r = updateProfile(
             name = null, bio = null, avatarUrl = null, avatarPublicId = null, removeAvatar = true
         )) {
-            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage("Аватар удалён"))
+            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage(uiStrings.avatarDeleted()))
             is AppResult.Failure -> _events.send(ProfileEvent.ShowError(r.error))
         }
         _isUpdatingProfile.value = false
@@ -167,7 +170,7 @@ class OwnProfileViewModel @Inject constructor(
 
     fun deletePost(postId: String) = viewModelScope.launch {
         when (val r = deletePostUc(postId)) {
-            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage("Пост удалён"))
+            is AppResult.Success -> _events.send(ProfileEvent.ShowMessage(uiStrings.postDeleted()))
             is AppResult.Failure -> _events.send(ProfileEvent.ShowError(r.error))
         }
     }

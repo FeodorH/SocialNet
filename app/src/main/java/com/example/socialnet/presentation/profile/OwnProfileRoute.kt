@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.socialnet.core.common.AppError
+import com.example.socialnet.presentation.common.rememberErrorMapper
 import com.example.socialnet.presentation.profile.model.ProfileEvent
 
 @Composable
@@ -20,12 +21,14 @@ fun ProfileRoute(
     viewModel: OwnProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val errorMapper = rememberErrorMapper()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is ProfileEvent.ShowMessage -> snackbarHostState.showSnackbar(event.text)
-                is ProfileEvent.ShowError -> snackbarHostState.showSnackbar(messageFor(event.error))
+                is ProfileEvent.ShowError ->
+                    snackbarHostState.showSnackbar(errorMapper.message(event.error))
                 ProfileEvent.LoggedOut -> onLoggedOut()
             }
         }
@@ -45,13 +48,4 @@ fun ProfileRoute(
         onReactionClick = viewModel::onReactionClick,
         onLogoutClick = viewModel::logout,
     )
-}
-
-private fun messageFor(error: AppError): String = when (error) {
-    AppError.Network -> "Нет подключения к интернету"
-    AppError.Unauthorized -> "Требуется вход"
-    AppError.NotFound -> "Данные не найдены"
-    is AppError.Validation -> error.reason
-    is AppError.Server -> "Ошибка сервера. Попробуйте позже"
-    is AppError.Unknown -> "Что-то пошло не так"
 }

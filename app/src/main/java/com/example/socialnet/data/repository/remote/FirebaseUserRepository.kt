@@ -30,14 +30,13 @@ class FirebaseUserRepository @Inject constructor(
             try {
                 val snapshot = usersCollection.document(userId).get().await()
                 val userResponse = snapshot.toObject(UserResponse::class.java)
-
                 if (userResponse != null) {
                     AppResult.Success(userResponse.toDomain())
                 } else {
                     AppResult.Failure(AppError.NotFound)
                 }
             } catch (e: Exception) {
-                AppResult.Failure(AppError.Unknown(e))
+                AppResult.Failure(mapFirestoreException(e))
             }
         }
 
@@ -81,9 +80,8 @@ class FirebaseUserRepository @Inject constructor(
             } else if (avatarUrl != null) {
                 if (avatarPublicId == null) {
                     return@withContext AppResult.Failure(
-                        AppError.Validation(
-                            AppError.Validation.Field.NAME,
-                            "Не передан publicId для аватара"
+                        AppError.Unknown(
+                            IllegalStateException("avatarPublicId required when avatarUrl is present")
                         )
                     )
                 }
@@ -100,7 +98,15 @@ class FirebaseUserRepository @Inject constructor(
 
             AppResult.Success(userResponse.toDomain())
         } catch (e: Exception) {
-            AppResult.Failure(AppError.Unknown(e))
+            AppResult.Failure(mapFirestoreException(e))
         }
+    }
+
+    private fun mapFirestoreException(e: Exception): AppError = when {
+        e.message?.contains("PERMISSION_DENIED", ignoreCase = true) == true -> AppError.Unauthorized
+        e.message?.contains("NOT_FOUND", ignoreCase = true) == true -> AppError.NotFound
+        e.message?.contains("UNAVAILABLE", ignoreCase = true) == true ||
+                e.message?.contains("network", ignoreCase = true) == true -> AppError.Network
+        else -> AppError.Unknown(e)
     }
 }

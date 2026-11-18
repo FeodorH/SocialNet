@@ -12,6 +12,7 @@ import com.example.socialnet.core.model.PostDraft
 import com.example.socialnet.domain.usecase.CreatePostUseCase
 import com.example.socialnet.domain.usecase.GetPostUseCase
 import com.example.socialnet.domain.usecase.UpdatePostUseCase
+import com.example.socialnet.presentation.common.ErrorMapper
 import com.example.socialnet.presentation.post.model.SavePostEvent
 import com.example.socialnet.presentation.post.model.SavePostUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +32,7 @@ class SavePostViewModel @Inject constructor(
     private val createPostUseCase: CreatePostUseCase,
     private val updatePostUseCase: UpdatePostUseCase,
     private val getPostUseCase: GetPostUseCase,
+    private val errorMapper: ErrorMapper
 ) : ViewModel() {
 
     private val postId: String? = savedStateHandle["postId"]
@@ -120,11 +122,7 @@ class SavePostViewModel @Inject constructor(
             }
             is AppResult.Failure -> {
                 _state.value = UiState.Error(
-                    message = when (r.error) {
-                        AppError.NotFound -> "Пост не найден или удалён"
-                        AppError.Network -> "Нет подключения к интернету"
-                        else -> "Не удалось загрузить пост"
-                    }
+                    message = errorMapper.message(r.error)
                 )
             }
         }

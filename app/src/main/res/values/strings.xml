@@ -16,6 +16,8 @@
     <string name="profile">Профиль</string>
     <string name="subscribe">Подписаться</string>
     <string name="unsubscribe">Отписаться</string>
+    <string name="right_now">только что</string>
+    <string name="yesterday">вчера</string>
 
     <!-- Профиль -->
     <string name="profile_unavailable">Профиль недоступен</string>
@@ -24,15 +26,20 @@
     <string name="profile_not_found">Профиль не найден</string>
     <string name="guest_profile_hint">Войдите, чтобы увидеть свой профиль, посты и подписки</string>
     <string name="posts_count">Постов: %1$d</string>
+    <string name="profile_updated">Профиль обновлён</string>
+    <string name="action_failed">Не удалось выполнить действие</string>
 
     <!-- Диалог аватара -->
     <string name="avatar">Аватар</string>
     <string name="choose_action">Выберите действие</string>
     <string name="upload_new_avatar">Загрузить новый</string>
+    <string name="avatar_updated">Аватар обновлён</string>
+    <string name="avatar_deleted">Аватар удалён</string>
 
     <!-- Диалог удаления поста -->
     <string name="delete_post_title">Удалить пост?</string>
     <string name="delete_post_message">Это действие нельзя отменить</string>
+    <string name="post_deleted">Пост удалён</string>
 
     <!-- Создание / редактирование поста -->
     <string name="create_post">Создать пост</string>
@@ -72,6 +79,7 @@
 
     <!-- Верификация почты -->
     <string name="verify_email_title">Подтвердите почту</string>
+    <string name="email_verification_pending">Почта ещё не подтверждена. Проверьте письмо.</string>
     <string name="verify_email_sent_to">Мы отправили письмо на</string>
     <string name="verify_email_instruction">Перейдите по ссылке из письма, затем нажмите «Я подтвердил».</string>
     <string name="verify_email_confirm">Я подтвердил</string>
@@ -91,12 +99,13 @@
     <string name="edit_button">Изменить</string>
     <string name="internet_connection_error">Нет соединения с интернетом</string>
 
-    <!-- Errors -->
+    <!-- Errors: общие -->
     <string name="error_network">Нет подключения к интернету</string>
     <string name="error_unauthorized">Требуется повторный вход</string>
     <string name="error_not_found">Данные не найдены</string>
     <string name="error_server">Ошибка сервера. Попробуйте позже</string>
     <string name="error_unknown">Что-то пошло не так</string>
+    <string name="error_self_subscription">Нельзя подписаться на самого себя</string>
 
     <!-- Fields -->
     <string name="field_email">Email</string>
@@ -113,5 +122,6 @@
     <string name="error_validation_too_many">Слишком много «%1$s» (максимум %2$d)</string>
     <string name="error_validation_too_large">«%1$s» превышает максимальный размер (%2$d МБ)</string>
     <string name="error_validation_unsupported_type">«%1$s» имеет неподдерживаемый формат</string>
+    <string name="error_validation_user_already_exists">Пользователь с таким email уже зарегистрирован</string>
 
 </resources>

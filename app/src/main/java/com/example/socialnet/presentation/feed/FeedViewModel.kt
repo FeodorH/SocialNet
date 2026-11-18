@@ -1,7 +1,10 @@
 package com.example.socialnet.presentation.feed
 
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.socialnet.R
+import com.example.socialnet.core.common.AppError
 import com.example.socialnet.core.common.AppResult
 import com.example.socialnet.core.common.UiState
 import com.example.socialnet.core.model.FeedType
@@ -12,8 +15,10 @@ import com.example.socialnet.domain.usecase.ObserveCurrentUserUseCase
 import com.example.socialnet.domain.usecase.ObserveFeedUseCase
 import com.example.socialnet.domain.usecase.ObserveSubscriptionIdsUseCase
 import com.example.socialnet.domain.usecase.SyncFeedUseCase
+import com.example.socialnet.domain.usecase.SyncSubscriptionsUseCase
 import com.example.socialnet.domain.usecase.ToggleReactionUseCase
 import com.example.socialnet.domain.usecase.ToggleSubscriptionUseCase
+import com.example.socialnet.presentation.common.ErrorMapper
 import com.example.socialnet.presentation.common.UiEvent
 import com.example.socialnet.presentation.feed.model.FeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,6 +47,8 @@ class FeedViewModel @Inject constructor(
     private val observeCurrentUser: ObserveCurrentUserUseCase,
     private val observeSubscriptionIds: ObserveSubscriptionIdsUseCase,
     private val toggleSubscription: ToggleSubscriptionUseCase,
+    private val syncSubscriptions: SyncSubscriptionsUseCase,
+    private val errorMapper: ErrorMapper
 ) : ViewModel() {
 
     /** управляющие флаги */
@@ -99,6 +106,8 @@ class FeedViewModel @Inject constructor(
     init {
         performSync(_selectedTab.value, cursor = null)
 
+        viewModelScope.launch { syncSubscriptions() }
+
         viewModelScope.launch {
             observeCurrentUser().collect { user ->
                 if (user == null && _selectedTab.value == FeedType.SUBSCRIPTIONS) {
@@ -111,7 +120,7 @@ class FeedViewModel @Inject constructor(
     fun selectTab(tab: FeedType) = viewModelScope.launch {
         if (tab == _selectedTab.value) return@launch
         if (tab == FeedType.SUBSCRIPTIONS && observeCurrentUser().first() == null) {
-            _events.send(UiEvent.ShowMessage("Войдите, чтобы увидеть подписки"))
+            _events.send(UiEvent.ShowMessage(errorMapper.message(AppError.Unauthorized)))
             return@launch
         }
         _selectedTab.value = tab
@@ -148,7 +157,7 @@ class FeedViewModel @Inject constructor(
 
             }
             is AppResult.Failure -> {
-                _events.send(UiEvent.ShowMessage("Не удалось изменить реакцию"))
+                _events.send(UiEvent.ShowMessage(errorMapper.message(r.error)))
             }
         }
     }
@@ -156,7 +165,7 @@ class FeedViewModel @Inject constructor(
     fun onSubscribeClick(authorId: String, isSubscribed: Boolean) = viewModelScope.launch {
         when (val r = toggleSubscription(authorId, isSubscribed)) {
             is AppResult.Success -> Unit
-            is AppResult.Failure -> _events.send(UiEvent.ShowMessage("Не удалось изменить подписку"))
+            is AppResult.Failure -> _events.send(UiEvent.ShowMessage(errorMapper.message(r.error)))
         }
     }
 
@@ -187,7 +196,7 @@ class FeedViewModel @Inject constructor(
                             _autoLoadMoreBlocked.value = true
                         }
                         if (state.value is UiState.Content) {
-                            _events.send(UiEvent.ShowMessage("Не удалось загрузить"))
+                            _events.send(UiEvent.ShowMessage(errorMapper.message(result.error)))
                         } else {
                             _initialError.value = result.error.toString()
                         }

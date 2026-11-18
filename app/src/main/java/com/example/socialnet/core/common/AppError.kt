@@ -1,19 +1,31 @@
 package com.example.socialnet.core.common
 
-sealed class AppError(message: String? = null, cause: Throwable? = null) : Exception(message, cause) {
 
-    data object Network : AppError("Нет подключения к интернету")
+sealed interface AppError {
 
-    data object Unauthorized : AppError("Требуется повторный вход")
+    data object Network : AppError
+    data object Unauthorized : AppError
+    data object NotFound : AppError
 
-    data object NotFound : AppError("Данные не найдены")
+    sealed interface Validation : AppError {
+        val field: Field
 
-    data class Validation(val field: Field, val reason: String) : AppError("Некорректные данные: $field") {
         enum class Field { EMAIL, PASSWORD, NAME, TEXT, IMAGES }
+
+        data class Required(override val field: Field) : Validation
+        data class TooShort(override val field: Field, val min: Int) : Validation
+        data class TooLong(override val field: Field, val max: Int) : Validation
+        data class InvalidFormat(override val field: Field) : Validation
+        data class TooMany(override val field: Field, val max: Int) : Validation
+        data class TooLarge(override val field: Field, val maxBytes: Long) : Validation
+        data class UnsupportedType(override val field: Field) : Validation
+        data class UserAlreadyExists(override val field: Field): Validation
     }
 
-    data class Server(val code: String? = null, val details: String? = null) :
-        AppError("Ошибка сервера${code?.let { " ($it)" } ?: ""}")
+    data object SelfSubscription : AppError
 
-    data class Unknown(override val cause: Throwable? = null) : AppError("Неизвестная ошибка", cause)
+    /** Ошибка сервера. `code` — техническая строка (для логов/аналитики), в UI не показывается. */
+    data class Server(val code: String? = null, val cause: Throwable? = null) : AppError
+
+    data class Unknown(val cause: Throwable? = null) : AppError
 }

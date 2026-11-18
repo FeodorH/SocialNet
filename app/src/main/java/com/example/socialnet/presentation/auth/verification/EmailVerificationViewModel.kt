@@ -8,6 +8,8 @@ import com.example.socialnet.core.common.WorkingRules.RESENDING_COOLDOWN_SECONDS
 import com.example.socialnet.domain.usecase.LogoutUseCase
 import com.example.socialnet.domain.usecase.ReloadCurrentUserUseCase
 import com.example.socialnet.domain.usecase.SendEmailVerificationUseCase
+import com.example.socialnet.presentation.common.ErrorMapper
+import com.example.socialnet.presentation.common.UiStrings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -37,6 +39,8 @@ class EmailVerificationViewModel @Inject constructor(
     private val reloadCurrentUser: ReloadCurrentUserUseCase,
     private val sendEmailVerification: SendEmailVerificationUseCase,
     private val logout: LogoutUseCase,
+    private val errorMapper: ErrorMapper,
+    private val uiStrings: UiStrings,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EmailVerificationUiState())
@@ -61,7 +65,7 @@ class EmailVerificationViewModel @Inject constructor(
             }
             is AppResult.Failure -> {
                 _state.update {
-                    it.copy(isSending = false, errorMessage = mapError(r.error))
+                    it.copy(isSending = false, errorMessage = errorMapper.message(r.error))
                 }
             }
         }
@@ -74,20 +78,19 @@ class EmailVerificationViewModel @Inject constructor(
         when (val r = reloadCurrentUser()) {
             is AppResult.Success -> {
                 if (r.data) {
-                    // Почта подтверждена — AppViewModel сам переключит экран
                     _state.update { it.copy(isChecking = false) }
                 } else {
                     _state.update {
                         it.copy(
                             isChecking = false,
-                            errorMessage = "Почта ещё не подтверждена. Проверьте письмо.",
+                            errorMessage = uiStrings.emailVerificationPending(),
                         )
                     }
                 }
             }
             is AppResult.Failure -> {
                 _state.update {
-                    it.copy(isChecking = false, errorMessage = mapError(r.error))
+                    it.copy(isChecking = false, errorMessage = errorMapper.message(r.error))
                 }
             }
         }
@@ -106,14 +109,5 @@ class EmailVerificationViewModel @Inject constructor(
                 _state.update { it.copy(canResendIn = it.canResendIn - 1) }
             }
         }
-    }
-
-    private fun mapError(e: AppError): String = when (e) {
-        AppError.Network -> "Нет подключения к интернету"
-        AppError.Unauthorized -> "Сессия истекла. Войдите заново."
-        is AppError.Server -> if (e.code == "RATE_LIMITED")
-            "Слишком часто. Подождите минуту."
-        else "Ошибка сервера"
-        else -> "Не удалось выполнить операцию"
     }
 }

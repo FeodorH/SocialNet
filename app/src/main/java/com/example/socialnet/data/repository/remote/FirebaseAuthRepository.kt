@@ -2,6 +2,7 @@ package com.example.socialnet.data.repository.remote
 
 import com.example.socialnet.core.common.AppError
 import com.example.socialnet.core.common.AppResult
+import com.example.socialnet.core.common.ValidationRules
 import com.example.socialnet.core.model.User
 import com.example.socialnet.core.utils.AppDispatchers
 import com.example.socialnet.data.dto.UserResponse
@@ -119,16 +120,18 @@ class FirebaseAuthRepository @Inject constructor(
             }
         }
 
-    private fun mapAuthException(e: Exception): AppError {
-        return when (e) {
-            is FirebaseAuthWeakPasswordException -> AppError.Validation(AppError.Validation.Field.PASSWORD, "Слишком слабый пароль")
-            is FirebaseAuthUserCollisionException -> AppError.Validation(AppError.Validation.Field.EMAIL, "Пользователь с таким email уже существует")
-            is FirebaseAuthInvalidCredentialsException -> AppError.Unauthorized
-            is IOException -> AppError.Network
-            else -> AppError.Unknown(e)
-        }
+    private fun mapAuthException(e: Exception): AppError = when (e) {
+        is FirebaseAuthWeakPasswordException -> AppError.Validation.TooShort(
+            AppError.Validation.Field.PASSWORD,
+            ValidationRules.MIN_PASSWORD,
+        )
+        is FirebaseAuthUserCollisionException -> AppError.Validation.UserAlreadyExists(
+            AppError.Validation.Field.EMAIL,
+        )
+        is FirebaseAuthInvalidCredentialsException -> AppError.Unauthorized
+        is IOException -> AppError.Network
+        else -> AppError.Unknown(e)
     }
-
     override fun observeEmailVerified(): Flow<Boolean> = callbackFlow {
         val listener = FirebaseAuth.IdTokenListener { auth ->
             trySend(auth.currentUser?.isEmailVerified ?: false)
@@ -162,7 +165,7 @@ class FirebaseAuthRepository @Inject constructor(
             } catch (e: FirebaseAuthException) {
                 if (e.errorCode == "ERROR_TOO_MANY_REQUESTS") {
                     AppResult.Failure(
-                        AppError.Server("RATE_LIMITED", "Слишком часто. Подождите минуту.")
+                        AppError.Server("RATE_LIMITED")
                     )
                 } else {
                     AppResult.Failure(AppError.Unknown(e))
