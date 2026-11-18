@@ -24,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.socialnet.core.common.UiState
 import com.example.socialnet.core.common.ValidationRules
 import com.example.socialnet.presentation.post.model.SavePostUiState
+import com.example.socialnet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,10 +63,15 @@ fun SavePostScreen(
         modifier = modifier.fillMaxSize().imePadding(),
         topBar = {
             TopAppBar(
-                title = { Text(if (isEdit) "Редактировать" else "Создать пост") },
+                title = {
+                    Text(
+                        if (isEdit) stringResource(R.string.edit_post_title)
+                        else stringResource(R.string.create_post)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрыть")
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                     }
                 },
                 actions = {
@@ -80,7 +87,7 @@ fun SavePostScreen(
                             TextButton(
                                 onClick = onSave,
                                 enabled = content.canPublish,
-                            ) { Text("Опубликовать") }
+                            ) { Text(stringResource(R.string.publish)) }
                         }
                     }
                 },
@@ -90,14 +97,14 @@ fun SavePostScreen(
         when (state) {
             UiState.Loading -> FullScreenLoading(Modifier.padding(padding))
             UiState.Empty -> FullScreenMessage(
-                message = "Пост не найден",
-                actionText = "Повторить",
+                message = stringResource(R.string.post_not_found),
+                actionText = stringResource(R.string.retry),
                 onAction = onRetryLoad,
                 modifier = Modifier.padding(padding),
             )
             is UiState.Error -> FullScreenMessage(
                 message = state.message,
-                actionText = if (state.retryable) "Повторить" else null,
+                actionText = if (state.retryable) stringResource(R.string.retry) else null,
                 onAction = onRetryLoad,
                 modifier = Modifier.padding(padding),
             )
@@ -139,7 +146,7 @@ private fun FormContent(
             OutlinedTextField(
                 value = state.text,
                 onValueChange = onTextChange,
-                placeholder = { Text("Что нового?") },
+                placeholder = { Text(stringResource(R.string.post_text_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 5,
                 maxLines = 12,
@@ -182,7 +189,7 @@ private fun FormContent(
                     }
                 }
                 Text(
-                    "Изображений: ${state.totalImagesCount} / ${ValidationRules.MAX_POST_IMAGES}",
+                    stringResource(R.string.images_count, state.totalImagesCount, ValidationRules.MAX_POST_IMAGES),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -194,7 +201,7 @@ private fun FormContent(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Добавить фото")
+                    Text(stringResource(R.string.add_photo))
                 }
             }
         }
@@ -209,7 +216,7 @@ private fun FormContent(
             OutlinedTextField(
                 value = state.text,
                 onValueChange = onTextChange,
-                placeholder = { Text("Что нового?") },
+                placeholder = { Text(stringResource(R.string.post_text_placeholder)) },
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
@@ -239,7 +246,7 @@ private fun FormContent(
                         onAddImagesClick = onAddImagesClick,
                     )
                     Text(
-                        "Изображений: ${state.totalImagesCount} / ${ValidationRules.MAX_POST_IMAGES}",
+                        stringResource(R.string.images_count, state.totalImagesCount, ValidationRules.MAX_POST_IMAGES),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -251,7 +258,7 @@ private fun FormContent(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Добавить фото")
+                        Text(stringResource(R.string.add_photo))
                     }
                 }
             }
@@ -291,7 +298,7 @@ private fun ImageThumbnail(
         ) {
             Icon(
                 Icons.Default.Close,
-                contentDescription = "Удалить",
+                contentDescription = stringResource(R.string.delete),
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
@@ -314,7 +321,7 @@ private fun AddImageThumbnail(
     ) {
         Icon(
             Icons.Default.Add,
-            contentDescription = "Добавить",
+            contentDescription = stringResource(R.string.add_image),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

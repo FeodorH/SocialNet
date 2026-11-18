@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.common.UiState
@@ -21,6 +22,7 @@ import com.example.socialnet.core.model.ReactionType
 import com.example.socialnet.presentation.common.components.PostCard
 import com.example.socialnet.presentation.feed.model.FeedUiState
 import kotlinx.coroutines.flow.distinctUntilChanged
+import com.example.socialnet.R
 
 @Composable
 fun FeedScreen(
@@ -43,7 +45,7 @@ fun FeedScreen(
             Tab(
                 selected = selectedTab == FeedType.GENERAL,
                 onClick = { onTabSelected(FeedType.GENERAL) },
-                text = { Text("Общая") },
+                text = { Text(stringResource(R.string.feed_tab_general)) },
             )
             Tab(
                 selected = selectedTab == FeedType.SUBSCRIPTIONS,
@@ -51,7 +53,7 @@ fun FeedScreen(
                 enabled = role,
                 text = {
                     Text(
-                        text = "Подписки",
+                        text = stringResource(R.string.feed_tab_subscriptions),
                         color = if (selectedTab == FeedType.SUBSCRIPTIONS) {
                             MaterialTheme.colorScheme.primary
                         } else {
@@ -65,9 +67,9 @@ fun FeedScreen(
         when (state) {
             UiState.Loading -> LoadingState()
             UiState.Empty -> EmptyState(
-                message = "Здесь пока пусто",
-                hint = if (role) "Подпишитесь на кого-нибудь или создайте первый пост"
-                else "Войдите, чтобы подписаться на авторов",
+                message = stringResource(R.string.feed_empty),
+                hint = if (role) stringResource(R.string.feed_empty_hint_user)
+                else stringResource(R.string.feed_empty_hint_guest),
             )
             is UiState.Error -> ErrorState(
                 message = state.message,
@@ -158,7 +160,7 @@ private fun ContentState(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            "Больше постов нет",
+                            stringResource(R.string.no_more_posts),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -207,6 +209,6 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(12.dp))
-        Button(onClick = onRetry) { Text("Повторить") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }

@@ -8,9 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.example.socialnet.core.model.Post
 import com.example.socialnet.core.model.ReactionType
 import com.example.socialnet.presentation.common.components.PostCard
+import com.example.socialnet.R
 
 @Composable
 fun OwnPostCard(
@@ -35,21 +37,21 @@ fun OwnPostCard(
             modifier = Modifier.align(Alignment.TopEnd),
         ) {
             IconButton(onClick = { menuExpanded = true }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Действия")
+                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.post_actions))
             }
             DropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
             ) {
                 DropdownMenuItem(
-                    text = { Text("Редактировать") },
+                    text = { Text(stringResource(R.string.edit)) },
                     onClick = {
                         menuExpanded = false
                         onEditClick()
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text("Удалить", color = MaterialTheme.colorScheme.error) },
+                    text = { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) },
                     onClick = {
                         menuExpanded = false
                         onDeleteClick()

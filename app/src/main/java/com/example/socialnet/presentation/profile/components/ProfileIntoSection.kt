@@ -10,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.model.User
 import com.example.socialnet.presentation.common.UserAvatar
+import com.example.socialnet.R
 
 /**
  * Общая шапка профиля — аватар, имя, bio, счётчик постов.
@@ -72,7 +74,7 @@ fun ProfileInfoSection(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = "Постов: $postsCount",
+            text = stringResource(R.string.posts_count, postsCount),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

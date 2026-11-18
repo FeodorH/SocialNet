@@ -1,5 +1,6 @@
 package com.example.socialnet.presentation.main.components
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -10,21 +11,23 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.socialnet.presentation.main.navigation.MainRoutes
+import com.example.socialnet.R
 
-private data class BottomItem(
+data class BottomItem(
     val route: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
     val requiresAuth: Boolean,
 )
 
 private val bottomItems = listOf(
-    BottomItem(MainRoutes.FEED, "Лента", Icons.Default.Home, requiresAuth = false),
-    BottomItem(MainRoutes.savePost(), "Создать", Icons.Default.Add, requiresAuth = true),
-    BottomItem(MainRoutes.PROFILE, "Профиль", Icons.Default.Person, requiresAuth = false),
+    BottomItem(MainRoutes.FEED, R.string.nav_feed, Icons.Default.Home, requiresAuth = false),
+    BottomItem(MainRoutes.savePost(), R.string.nav_create, Icons.Default.Add, requiresAuth = true),
+    BottomItem(MainRoutes.PROFILE, R.string.profile, Icons.Default.Person, requiresAuth = false),
 )
 
 @Composable
@@ -58,8 +61,8 @@ fun MainBottomBar(
                         }
                     }
                 },
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
+                icon = { Icon(item.icon, contentDescription = stringResource(item.labelRes)) },
+                label = { Text(stringResource(item.labelRes)) },
             )
         }
     }

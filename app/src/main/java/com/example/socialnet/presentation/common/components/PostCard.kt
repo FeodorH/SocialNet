@@ -14,11 +14,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.model.Post
 import com.example.socialnet.core.model.ReactionType
 import com.example.socialnet.presentation.common.UserAvatar
 import com.example.socialnet.presentation.common.formatRelativeTime
+import com.example.socialnet.R
 
 @Composable
 fun PostCard(
@@ -106,14 +108,14 @@ private fun SubscribeButton(
             onClick = onClick,
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Text("Отписаться", style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.unsubscribe), style = MaterialTheme.typography.labelSmall)
         }
     } else {
         OutlinedButton(
             onClick = onClick,
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
         ) {
-            Text("Подписаться", style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.subscribe), style = MaterialTheme.typography.labelSmall)
         }
     }
 }

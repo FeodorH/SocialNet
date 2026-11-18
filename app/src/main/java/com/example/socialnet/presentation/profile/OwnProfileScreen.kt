@@ -11,6 +11,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.common.UiState
@@ -21,6 +22,7 @@ import com.example.socialnet.presentation.profile.components.OwnPostCard
 import com.example.socialnet.presentation.profile.components.OwnProfileActions
 import com.example.socialnet.presentation.profile.components.ProfileInfoSection
 import com.example.socialnet.presentation.profile.model.OwnProfileUiState
+import com.example.socialnet.R
 
 @Composable
 fun ProfileScreen(
@@ -50,13 +52,13 @@ fun ProfileScreen(
     when (state) {
         UiState.Loading -> FullScreenLoading(modifier)
         UiState.Empty -> FullScreenMessage(
-            message = "Профиль недоступен",
-            action = "Повторить" to onRefresh,
+            message = stringResource(R.string.profile_unavailable),
+            action = stringResource(R.string.retry) to onRefresh,
             modifier = modifier,
         )
         is UiState.Error -> FullScreenMessage(
             message = state.message,
-            action = if (state.retryable) "Повторить" to onRefresh else null,
+            action = if (state.retryable) stringResource(R.string.retry) to onRefresh else null,
             modifier = modifier,
         )
         is UiState.Content -> ContentState(
@@ -134,7 +136,7 @@ private fun ContentState(
                             CircularProgressIndicator()
                         } else {
                             Text(
-                                "У вас пока нет постов",
+                                stringResource(R.string.own_no_posts),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -171,24 +173,24 @@ private fun ContentState(
     if (showRemoveAvatarDialog) {
         AlertDialog(
             onDismissRequest = { showRemoveAvatarDialog = false },
-            title = { Text("Аватар") },
-            text = { Text("Выберите действие") },
+            title = { Text(stringResource(R.string.avatar)) },
+            text = { Text(stringResource(R.string.choose_action)) },
             confirmButton = {
                 TextButton(onClick = {
                     showRemoveAvatarDialog = false
                     avatarPicker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
-                }) { Text("Загрузить новый") }
+                }) { Text(stringResource(R.string.upload_new_avatar)) }
             },
             dismissButton = {
                 if (state.user.avatarUrl != null) {
                     TextButton(onClick = {
                         showRemoveAvatarDialog = false
                         onRemoveAvatar()
-                    }) { Text("Удалить", color = MaterialTheme.colorScheme.error) }
+                    }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
                 } else {
-                    TextButton(onClick = { showRemoveAvatarDialog = false }) { Text("Отмена") }
+                    TextButton(onClick = { showRemoveAvatarDialog = false }) { Text(stringResource(R.string.cancel)) }
                 }
             },
         )
@@ -198,16 +200,16 @@ private fun ContentState(
     postToDelete?.let { post ->
         AlertDialog(
             onDismissRequest = { postToDelete = null },
-            title = { Text("Удалить пост?") },
-            text = { Text("Это действие нельзя отменить") },
+            title = { Text(stringResource(R.string.delete_post_title)) },
+            text = { Text(stringResource(R.string.delete_post_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     onDeletePostClick(post.id)
                     postToDelete = null
-                }) { Text("Удалить", color = MaterialTheme.colorScheme.error) }
+                }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                TextButton(onClick = { postToDelete = null }) { Text("Отмена") }
+                TextButton(onClick = { postToDelete = null }) { Text(stringResource(R.string.cancel)) }
             },
         )
     }
@@ -224,19 +226,19 @@ private fun GuestProfilePrompt(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Профиль", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.profile), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(12.dp))
         Text(
-            "Войдите, чтобы увидеть свой профиль, посты и подписки",
+            stringResource(R.string.guest_profile_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
         Button(onClick = onLogin, modifier = Modifier.fillMaxWidth()) {
-            Text("Войти")
+            Text(stringResource(R.string.login))
         }
-        TextButton(onClick = onRegister) { Text("Зарегистрироваться") }
+        TextButton(onClick = onRegister) { Text(stringResource(R.string.register)) }
     }
 }
 

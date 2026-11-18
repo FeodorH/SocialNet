@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.socialnet.presentation.auth.model.AuthUiState
+import com.example.socialnet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +39,10 @@ fun LoginScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Вход") },
+                title = { Text(stringResource(R.string.login_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -53,13 +55,13 @@ fun LoginScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Войдите в аккаунт", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.login_heading), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = state.email,
                 onValueChange = onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.emailError != null,
@@ -74,7 +76,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.password,
                 onValueChange = onPasswordChange,
-                label = { Text("Пароль") },
+                label = { Text(stringResource(R.string.password_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.passwordError != null,
@@ -89,7 +91,8 @@ fun LoginScreen(
                         Icon(
                             if (passwordVisible) Icons.Default.VisibilityOff
                             else Icons.Default.Visibility,
-                            contentDescription = if (passwordVisible) "Скрыть" else "Показать",
+                            contentDescription = if (passwordVisible) stringResource(R.string.hide_password)
+                            else stringResource(R.string.show_password),
                         )
                     }
                 },
@@ -120,7 +123,7 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text("Войти")
+                    Text(stringResource(R.string.login))
                 }
             }
 
@@ -128,7 +131,7 @@ fun LoginScreen(
                 onClick = onForgotPassword,
                 enabled = !state.isLoading,
                 modifier = Modifier.align(Alignment.End),
-            ) { Text("Забыли пароль?") }
+            ) { Text(stringResource(R.string.forgot_password)) }
 
             Spacer(Modifier.weight(1f))
 
@@ -137,9 +140,9 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Нет аккаунта?", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.no_account), style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = onGoToRegister, enabled = !state.isLoading) {
-                    Text("Зарегистрироваться")
+                    Text(stringResource(R.string.register))
                 }
             }
         }

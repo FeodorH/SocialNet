@@ -10,7 +10,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.socialnet.R
 
 @Composable
 fun OtherProfileActions(
@@ -30,11 +32,11 @@ fun OtherProfileActions(
             )
         } else if (isSubscribed) {
             OutlinedButton(onClick = onToggleSubscription) {
-                Text("Отписаться")
+                Text(stringResource(R.string.unsubscribe))
             }
         } else {
             Button(onClick = onToggleSubscription) {
-                Text("Подписаться")
+                Text(stringResource(R.string.subscribe))
             }
         }
     }

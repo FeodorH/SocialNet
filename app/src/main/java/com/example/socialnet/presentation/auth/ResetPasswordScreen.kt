@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -18,6 +19,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.socialnet.presentation.auth.model.AuthEvent
 import com.example.socialnet.presentation.auth.model.AuthUiState
+import com.example.socialnet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,10 +34,10 @@ fun ResetPasswordScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Восстановление пароля") },
+                title = { Text(stringResource(R.string.reset_password_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -48,10 +50,10 @@ fun ResetPasswordScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Сброс пароля", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.reset_password_heading), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Введите email, привязанный к аккаунту. Мы отправим ссылку для восстановления.",
+                stringResource(R.string.reset_password_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start,
@@ -61,7 +63,7 @@ fun ResetPasswordScreen(
             OutlinedTextField(
                 value = state.email,
                 onValueChange = onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.emailError != null,
@@ -89,7 +91,7 @@ fun ResetPasswordScreen(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text("Отправить ссылку")
+                    Text(stringResource(R.string.send_reset_link))
                 }
             }
 
@@ -101,7 +103,7 @@ fun ResetPasswordScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(onClick = onBack, enabled = !state.isLoading) {
-                    Text("Вернуться ко входу")
+                    Text(stringResource(R.string.back_to_login))
                 }
             }
         }
@@ -115,14 +117,13 @@ fun ResetPasswordRoute(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val sentMessage = stringResource(R.string.reset_email_sent)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 AuthEvent.PasswordResetSent -> {
-                    snackbarHostState.showSnackbar(
-                        "Письмо отправлено. Проверьте почту."
-                    )
+                    snackbarHostState.showSnackbar(sentMessage)
                     onBack()
                 }
             }

@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.common.ValidationRules
 import com.example.socialnet.core.model.User
+import com.example.socialnet.R
 
 @Composable
 fun EditProfileDialog(
@@ -20,13 +22,13 @@ fun EditProfileDialog(
 
     AlertDialog(
         onDismissRequest = { if (!isSaving) onDismiss() },
-        title = { Text("Редактировать профиль") },
+        title = { Text(stringResource(R.string.edit_profile)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it.take(ValidationRules.MAX_NAME) },
-                    label = { Text("Имя") },
+                    label = { Text(stringResource(R.string.name_label)) },
                     singleLine = true,
                     enabled = !isSaving,
                     modifier = Modifier.fillMaxWidth(),
@@ -34,7 +36,7 @@ fun EditProfileDialog(
                 OutlinedTextField(
                     value = bio,
                     onValueChange = { bio = it.take(300) },
-                    label = { Text("О себе") },
+                    label = { Text(stringResource(R.string.bio_label)) },
                     minLines = 2,
                     maxLines = 4,
                     enabled = !isSaving,
@@ -48,11 +50,11 @@ fun EditProfileDialog(
                 enabled = !isSaving && name.isNotBlank(),
             ) {
                 if (isSaving) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                else Text("Сохранить")
+                else Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isSaving) { Text("Отмена") }
+            TextButton(onClick = onDismiss, enabled = !isSaving) { Text(stringResource(R.string.cancel)) }
         },
     )
 }

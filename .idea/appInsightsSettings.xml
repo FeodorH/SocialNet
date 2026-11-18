@@ -7,6 +7,14 @@
         <entry key="Firebase Crashlytics">
           <value>
             <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="com.example.socialnet" />
+                  <option name="mobileSdkAppId" value="1:84291634818:android:712c09eee8a6845105969b" />
+                  <option name="projectId" value="socalnet-fe15c" />
+                  <option name="projectNumber" value="84291634818" />
+                </ConnectionSetting>
+              </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="THIRTY_DAYS" />
               <option name="visibilityType" value="ALL" />

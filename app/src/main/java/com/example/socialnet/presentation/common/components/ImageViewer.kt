@@ -34,12 +34,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.socialnet.core.model.ImageRef
 import kotlinx.coroutines.launch
+import com.example.socialnet.R
 
 @Composable
 fun ImageViewer(
@@ -85,7 +87,7 @@ fun ImageViewer(
             ) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Закрыть",
+                    contentDescription = stringResource(R.string.close),
                     tint = Color.White,
                 )
             }

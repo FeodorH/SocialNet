@@ -8,9 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.socialnet.R
 
 @Composable
 fun EmailVerificationScreen(
@@ -45,7 +47,7 @@ fun EmailVerificationScreen(
         Spacer(Modifier.height(24.dp))
 
         Text(
-            "Подтвердите почту",
+            stringResource(R.string.verify_email_title),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
         )
@@ -53,7 +55,7 @@ fun EmailVerificationScreen(
         Spacer(Modifier.height(12.dp))
 
         Text(
-            "Мы отправили письмо на",
+            stringResource(R.string.verify_email_sent_to),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -71,7 +73,7 @@ fun EmailVerificationScreen(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            "Перейдите по ссылке из письма, затем нажмите «Я подтвердил».",
+            stringResource(R.string.verify_email_instruction),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -101,7 +103,7 @@ fun EmailVerificationScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text("Я подтвердил")
+                Text(stringResource(R.string.verify_email_confirm))
             }
         }
 
@@ -118,16 +120,16 @@ fun EmailVerificationScreen(
                     strokeWidth = 2.dp,
                 )
             } else if (state.canResendIn > 0) {
-                Text("Отправить повторно через ${state.canResendIn} с")
+                Text(stringResource(R.string.verify_email_resend_in, state.canResendIn))
             } else {
-                Text("Отправить письмо повторно")
+                Text(stringResource(R.string.verify_email_resend))
             }
         }
 
         Spacer(Modifier.height(24.dp))
 
         TextButton(onClick = onLogoutClick) {
-            Text("Выйти из аккаунта", color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.logout), color = MaterialTheme.colorScheme.error)
         }
     }
 }

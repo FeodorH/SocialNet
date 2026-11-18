@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.socialnet.presentation.auth.model.AuthUiState
+import com.example.socialnet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +39,10 @@ fun RegisterScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Регистрация") },
+                title = { Text(stringResource(R.string.register_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -53,13 +55,13 @@ fun RegisterScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Создать аккаунт", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.create_account), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = state.name,
                 onValueChange = onNameChange,
-                label = { Text("Имя") },
+                label = { Text(stringResource(R.string.name_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.nameError != null,
@@ -71,7 +73,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.email,
                 onValueChange = onEmailChange,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.emailError != null,
@@ -86,7 +88,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.password,
                 onValueChange = onPasswordChange,
-                label = { Text("Пароль") },
+                label = { Text(stringResource(R.string.password_label)) },
                 singleLine = true,
                 enabled = !state.isLoading,
                 isError = state.passwordError != null,
@@ -101,7 +103,8 @@ fun RegisterScreen(
                         Icon(
                             if (passwordVisible) Icons.Default.VisibilityOff
                             else Icons.Default.Visibility,
-                            contentDescription = if (passwordVisible) "Скрыть" else "Показать",
+                            contentDescription = if (passwordVisible) stringResource(R.string.hide_password)
+                            else stringResource(R.string.show_password),
                         )
                     }
                 },
@@ -128,7 +131,7 @@ fun RegisterScreen(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text("Зарегистрироваться")
+                    Text(stringResource(R.string.register))
                 }
             }
 
@@ -139,9 +142,9 @@ fun RegisterScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Уже есть аккаунт?", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.already_have_account), style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = onGoToLogin, enabled = !state.isLoading) {
-                    Text("Войти")
+                    Text(stringResource(R.string.login))
                 }
             }
         }

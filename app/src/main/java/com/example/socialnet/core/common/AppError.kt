@@ -1,10 +1,8 @@
 package com.example.socialnet.core.common
 
-import com.example.socialnet.R
-
 sealed class AppError(message: String? = null, cause: Throwable? = null) : Exception(message, cause) {
 
-    data object Network : AppError(context.getString(R.string.no_internet_connection))
+    data object Network : AppError("Нет подключения к интернету")
 
     data object Unauthorized : AppError("Требуется повторный вход")
 

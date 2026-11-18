@@ -10,6 +10,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.socialnet.core.common.UiState
 import com.example.socialnet.core.model.ReactionType
@@ -17,6 +18,7 @@ import com.example.socialnet.presentation.common.components.PostCard
 import com.example.socialnet.presentation.profile.components.OtherProfileActions
 import com.example.socialnet.presentation.profile.components.ProfileInfoSection
 import com.example.socialnet.presentation.profile.model.OtherProfileUiState
+import com.example.socialnet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +30,7 @@ fun OtherProfileScreen(
     onReactionClick: (postId: String, type: ReactionType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val title = (state as? UiState.Content)?.data?.user?.name ?: "Профиль"
+    val title = (state as? UiState.Content)?.data?.user?.name ?: stringResource(R.string.profile)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -37,7 +39,7 @@ fun OtherProfileScreen(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 },
             )
@@ -50,14 +52,14 @@ fun OtherProfileScreen(
             ) { CircularProgressIndicator() }
 
             UiState.Empty -> MessageContent(
-                message = "Профиль не найден",
-                action = "Повторить" to onRefresh,
+                message = stringResource(R.string.profile_not_found),
+                action = stringResource(R.string.retry) to onRefresh,
                 modifier = Modifier.padding(padding),
             )
 
             is UiState.Error -> MessageContent(
                 message = state.message,
-                action = if (state.retryable) "Повторить" to onRefresh else null,
+                action = if (state.retryable) stringResource(R.string.retry) to onRefresh else null,
                 modifier = Modifier.padding(padding),
             )
 
@@ -113,7 +115,7 @@ private fun ContentState(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            "У пользователя пока нет постов",
+                            stringResource(R.string.other_no_posts),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
