@@ -1,4 +1,4 @@
-name: Cleanup Orphaned Images
+name: Cleanup Unbound Images
 on:
   schedule:
     - cron: '0 4 * * *' # Каждый день в 04:00 UTC
@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '26'
       - run: cd scripts && npm ci
       - run: cd scripts && node cleanup-orphaned-images.js
         env:

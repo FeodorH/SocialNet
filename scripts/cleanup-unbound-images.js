@@ -1,17 +1,19 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 const cloudinary = require('cloudinary').v2;
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+initializeApp({ credential: cert(serviceAccount) });
+
+const db = getFirestore();
 
 cloudinary.config({ secure: true });
 const PREFIX = 'socialnet/';
 const PAGE_SIZE = 500;
 const DELETE_BATCH_SIZE = 100;
 
-//сбор избражений из файерстор
+// сбор изображений из Firestore
 async function collectUsedIds() {
-  const db = admin.firestore();
   const usedIds = new Set();
 
   console.log('Collecting public_ids from Firestore...');
@@ -34,7 +36,7 @@ async function collectUsedIds() {
   return usedIds;
 }
 
-// сбор всех изображений клаудинари
+// сбор всех изображений Cloudinary
 async function collectAllCloudinaryIds() {
   const allIds = [];
   let nextCursor = null;
@@ -93,6 +95,7 @@ async function deleteInBatches(ids) {
   return { totalDeleted, totalFailed };
 }
 
+// главная функция очистки
 async function cleanup() {
   console.log('Starting orphaned images cleanup...');
 
