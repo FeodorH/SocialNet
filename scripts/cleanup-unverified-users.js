@@ -1,7 +1,13 @@
-const admin = require('firebase-admin');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+
+initializeApp({
+  credential: cert(serviceAccount)
+});
+
+const auth = getAuth();
 
 const GRACE_PERIOD_MS = 5//7 * 24 * 60 * 60 * 1000; // удаление пользвателя есть не подтвердил за неделю
 const now = Date.now();
@@ -10,7 +16,7 @@ let totalDeleted = 0;
 
 async function cleanup() {
   do {
-    const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
+    const listUsersResult = await auth.listUsers(1000, nextPageToken);
     nextPageToken = listUsersResult.pageToken;
 
     const toDelete = listUsersResult.users
@@ -23,7 +29,7 @@ async function cleanup() {
       .map(user => user.uid);
 
     if (toDelete.length > 0) {
-      const deleteResult = await admin.auth().deleteUsers(toDelete);
+      const deleteResult = await auth.deleteUsers(toDelete);
       totalDeleted += deleteResult.successCount;
       console.log(`Удалено ${deleteResult.successCount} пользователей.`);
     }
