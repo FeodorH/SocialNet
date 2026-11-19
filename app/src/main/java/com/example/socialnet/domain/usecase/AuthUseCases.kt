@@ -1,0 +1,35 @@
+package com.example.socialnet.domain.usecase
+
+import com.example.socialnet.core.common.AppResult
+import com.example.socialnet.core.model.User
+import com.example.socialnet.domain.repository.common.OfflineFirstAuthRepository
+import com.example.socialnet.domain.vaildation.AuthValidator
+import jakarta.inject.Inject
+
+class RegisterUseCases @Inject constructor(private val auth: OfflineFirstAuthRepository) {
+    suspend operator fun invoke(email: String, password: String, name: String): AppResult<User> {
+        AuthValidator.validateEmail(email)?.let { return AppResult.Failure(it) }
+        AuthValidator.validatePassword(password)?.let { return AppResult.Failure(it) }
+        AuthValidator.validateName(name)?.let { return AppResult.Failure(it) }
+        return auth.register(email.trim(), password, name.trim())
+    }
+}
+
+class LoginUseCase @Inject constructor(private val auth: OfflineFirstAuthRepository) {
+    suspend operator fun invoke(email: String, password: String): AppResult<User> {
+        AuthValidator.validateEmail(email)?.let { return AppResult.Failure(it) }
+        AuthValidator.validatePassword(password)?.let { return AppResult.Failure(it) }
+        return auth.login(email.trim(), password)
+    }
+}
+
+class ResetPasswordUseCase @Inject constructor(private val auth: OfflineFirstAuthRepository) {
+    suspend operator fun invoke(email: String): AppResult<Unit> {
+        AuthValidator.validateEmail(email)?.let { return AppResult.Failure(it) }
+        return auth.sendPasswordReset(email.trim())
+    }
+}
+
+class LogoutUseCase @Inject constructor(private val auth: OfflineFirstAuthRepository) {
+    suspend operator fun invoke(): AppResult<Unit> = auth.logout()
+}

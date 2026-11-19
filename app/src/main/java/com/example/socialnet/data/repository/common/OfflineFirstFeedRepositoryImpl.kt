@@ -1,0 +1,70 @@
+package com.example.socialnet.data.repository.common
+
+import com.example.socialnet.core.common.AppResult
+import com.example.socialnet.core.common.WorkingRules.FEED_WINDOW
+import com.example.socialnet.core.model.FeedType
+import com.example.socialnet.core.model.PageCursor
+import com.example.socialnet.core.model.Post
+import com.example.socialnet.core.utils.AppDispatchers
+import com.example.socialnet.data.local.dao.PostDao
+import com.example.socialnet.data.mapper.toDomain
+import com.example.socialnet.data.mapper.toEntity
+import com.example.socialnet.domain.repository.remote.FeedRepository
+import com.example.socialnet.domain.repository.common.OfflineFirstFeedRepository
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+
+class OfflineFirstFeedRepositoryImpl @Inject constructor(
+    private val remoteFeedRepository: FeedRepository,
+    private val postDao: PostDao,
+    private val dispatchers: AppDispatchers,
+) : OfflineFirstFeedRepository {
+
+    override fun observeFeed(type: FeedType, userId: String?): Flow<List<Post>> = flow {
+        coroutineScope {
+            // 1. Realtime: Firestore → Room
+            launch {
+                remoteFeedRepository
+                    .observeFeedRealtime(type, FEED_WINDOW)
+                    .collect { posts ->
+                        if (posts.isNotEmpty()) {
+                            postDao.upsertPosts(posts.map { it.toEntity() })
+                        }
+                    }
+            }
+
+            // 2. UI: Room → Compose
+            val roomFlow = when (type) {
+                FeedType.GENERAL -> postDao.observeGeneralFeed(limit = FEED_WINDOW)
+                FeedType.SUBSCRIPTIONS -> userId
+                    ?.let { postDao.observeSubscriptionFeed(it, limit = FEED_WINDOW) }
+                    ?: emptyFlow()
+            }
+            emitAll(roomFlow.map { entities -> entities.map { it.toDomain() } })
+        }
+    }
+
+    override suspend fun syncFeed(
+        type: FeedType,
+        cursor: PageCursor?,
+        pageSize: Int
+    ): AppResult<PageCursor?> = withContext(dispatchers.io) {
+        when (val result = remoteFeedRepository.loadFeed(type, cursor, pageSize)) {
+            is AppResult.Success -> {
+                val entities = result.data.posts.map { it.toEntity() }
+                if (entities.isNotEmpty()) {
+                    postDao.upsertPosts(entities)
+                }
+                AppResult.Success(result.data.nextCursor)
+            }
+            is AppResult.Failure -> result
+        }
+    }
+}

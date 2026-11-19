@@ -1,3 +1,127 @@
 <resources>
-    <string name="app_name">SocalNet</string>
+    <string name="app_name">SocialNet</string>
+
+    <!-- Общие -->
+    <string name="retry">Повторить</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="back">Назад</string>
+    <string name="close">Закрыть</string>
+    <string name="login">Войти</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Пароль</string>
+    <string name="show_password">Показать</string>
+    <string name="hide_password">Скрыть</string>
+    <string name="profile">Профиль</string>
+    <string name="subscribe">Подписаться</string>
+    <string name="unsubscribe">Отписаться</string>
+    <string name="right_now">только что</string>
+    <string name="yesterday">вчера</string>
+
+    <!-- Профиль -->
+    <string name="profile_unavailable">Профиль недоступен</string>
+    <string name="own_no_posts">У вас пока нет постов</string>
+    <string name="other_no_posts">У пользователя пока нет постов</string>
+    <string name="profile_not_found">Профиль не найден</string>
+    <string name="guest_profile_hint">Войдите, чтобы увидеть свой профиль, посты и подписки</string>
+    <string name="posts_count">Постов: %1$d</string>
+    <string name="profile_updated">Профиль обновлён</string>
+    <string name="action_failed">Не удалось выполнить действие</string>
+
+    <!-- Диалог аватара -->
+    <string name="avatar">Аватар</string>
+    <string name="choose_action">Выберите действие</string>
+    <string name="upload_new_avatar">Загрузить новый</string>
+    <string name="avatar_updated">Аватар обновлён</string>
+    <string name="avatar_deleted">Аватар удалён</string>
+
+    <!-- Диалог удаления поста -->
+    <string name="delete_post_title">Удалить пост?</string>
+    <string name="delete_post_message">Это действие нельзя отменить</string>
+    <string name="post_deleted">Пост удалён</string>
+
+    <!-- Создание / редактирование поста -->
+    <string name="create_post">Создать пост</string>
+    <string name="edit_post_title">Редактировать</string>
+    <string name="publish">Опубликовать</string>
+    <string name="post_not_found">Пост не найден</string>
+    <string name="post_text_placeholder">Что нового?</string>
+    <string name="add_photo">Добавить фото</string>
+    <string name="add_image">Добавить</string>
+    <string name="images_count">Изображений: %1$d / %2$d</string>
+
+    <!-- Лента -->
+    <string name="feed_tab_general">Общая</string>
+    <string name="feed_tab_subscriptions">Подписки</string>
+    <string name="feed_empty">Здесь пока пусто</string>
+    <string name="feed_empty_hint_user">Подпишитесь на кого-нибудь или создайте первый пост</string>
+    <string name="feed_empty_hint_guest">Войдите, чтобы подписаться на авторов</string>
+    <string name="no_more_posts">Больше постов нет</string>
+    <string name="nav_feed">Лента</string>
+    <string name="nav_create">Создать</string>
+
+    <!-- Авторизация -->
+    <string name="login_title">Вход</string>
+    <string name="login_heading">Войдите в аккаунт</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="no_account">Нет аккаунта?</string>
+    <string name="register_title">Регистрация</string>
+    <string name="create_account">Создать аккаунт</string>
+    <string name="already_have_account">Уже есть аккаунт?</string>
+    <string name="reset_password_title">Восстановление пароля</string>
+    <string name="reset_password_heading">Сброс пароля</string>
+    <string name="reset_password_description">Введите email, привязанный к аккаунту. Мы отправим ссылку для восстановления.</string>
+    <string name="send_reset_link">Отправить ссылку</string>
+    <string name="back_to_login">Вернуться ко входу</string>
+    <string name="reset_email_sent">Письмо отправлено. Проверьте почту.</string>
+    <string name="name_label">Имя</string>
+
+    <!-- Верификация почты -->
+    <string name="verify_email_title">Подтвердите почту</string>
+    <string name="email_verification_pending">Почта ещё не подтверждена. Проверьте письмо.</string>
+    <string name="verify_email_sent_to">Мы отправили письмо на</string>
+    <string name="verify_email_instruction">Перейдите по ссылке из письма, затем нажмите «Я подтвердил».</string>
+    <string name="verify_email_confirm">Я подтвердил</string>
+    <string name="verify_email_resend_in">Отправить повторно через %1$d с</string>
+    <string name="verify_email_resend">Отправить письмо повторно</string>
+    <string name="logout">Выйти из аккаунта</string>
+    <string name="logout_short">Выйти</string>
+
+    <!-- Редактирование профиля -->
+    <string name="edit_profile">Редактировать профиль</string>
+    <string name="bio_label">О себе</string>
+    <string name="save">Сохранить</string>
+
+    <!-- Меню поста -->
+    <string name="post_actions">Действия</string>
+    <string name="edit">Редактировать</string>
+    <string name="edit_button">Изменить</string>
+    <string name="internet_connection_error">Нет соединения с интернетом</string>
+
+    <!-- Errors: общие -->
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_unauthorized">Требуется повторный вход</string>
+    <string name="error_not_found">Данные не найдены</string>
+    <string name="error_server">Ошибка сервера. Попробуйте позже</string>
+    <string name="error_unknown">Что-то пошло не так</string>
+    <string name="error_self_subscription">Нельзя подписаться на самого себя</string>
+
+    <!-- Fields -->
+    <string name="field_email">Email</string>
+    <string name="field_password">Пароль</string>
+    <string name="field_name">Имя</string>
+    <string name="field_text">Текст</string>
+    <string name="field_images">Изображения</string>
+
+    <!-- Validation -->
+    <string name="error_validation_required">Заполните поле «%1$s»</string>
+    <string name="error_validation_too_short">«%1$s» должен быть не короче %2$d символов</string>
+    <string name="error_validation_too_long">«%1$s» должен быть не длиннее %2$d символов</string>
+    <string name="error_validation_invalid_format">«%1$s» имеет некорректный формат</string>
+    <string name="error_validation_too_many">Слишком много «%1$s» (максимум %2$d)</string>
+    <string name="error_validation_too_large">«%1$s» превышает максимальный размер (%2$d МБ)</string>
+    <string name="error_validation_unsupported_type">«%1$s» имеет неподдерживаемый формат</string>
+    <string name="error_validation_user_already_exists">Пользователь с таким email уже зарегистрирован</string>
+
 </resources>

@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SocalNet"
+rootProject.name = "SocialNet"
 include(":app")
