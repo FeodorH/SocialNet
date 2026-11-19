@@ -1,0 +1,19 @@
+name: Cleanup Orphaned Images
+on:
+  schedule:
+    - cron: '0 4 * * *' # Каждый день в 04:00 UTC
+  workflow_dispatch:    # Ручной запуск
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd scripts && npm ci
+      - run: cd scripts && node cleanup-orphaned-images.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
