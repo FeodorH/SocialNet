@@ -9,7 +9,7 @@ initializeApp({
 
 const auth = getAuth();
 
-const GRACE_PERIOD_MS = 5//7 * 24 * 60 * 60 * 1000; // удаление пользвателя есть не подтвердил за неделю
+const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000; // удаление пользвателя есть не подтвердил за неделю
 const now = Date.now();
 let nextPageToken;
 let totalDeleted = 0;
